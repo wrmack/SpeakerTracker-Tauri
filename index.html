@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <!-- jsPDF and PDFObject require policies for object, frame and style sources -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self'; 
+      script-src 'self'; 
+      object-src 'self' data: blob: ; 
+      frame-src 'self' data: blob: ; 
+      style-src 'self' 'unsafe-inline';
+    "> -->
+    <link href="/src/css/main.css" rel="stylesheet">
+    <link href="/src/css/speakers.css" rel="stylesheet">
+    <link href="/src/css/setup.css" rel="stylesheet">
+    <link href="/src/css/reports.css" rel="stylesheet">    
+    <link href="/src/css/dark.css" rel="stylesheet">
+    <title>Speaker Tracker</title>
+  </head>
+  <body>
+    <!-- <div id="titlebar"></div> -->
+    <div id="nav-btn-container">
+      <button class="nav-item-btn active" id="speakers-btn">
+        <span class="nav-item-label">Speakers</span>
+      </button>
+      <button class="nav-item-btn" id="setup-btn">
+        <span class="nav-item-label">Setup</span>
+      </button>
+      <button class="nav-item-btn" id="reports-btn">
+        <span class="nav-item-label">Reports</span>
+      </button>
+    </div>
+
+    <div id="content-container"></div>
+
+    <!-- You can also require other files to run in this process -->
+    <script type="module" src="/src/content.ts"></script>
+    <!-- <script type="module" src="./jspdf.umd.js"></script> -->
+  </body>
+</html>

@@ -1,0 +1,105 @@
+<html>
+<head>
+<!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; "> -->
+<title>Speaker Tracker Info</title>
+<link href="/src/css/large-timer.css" rel="stylesheet">
+</head>
+<body>
+<div id="modal-controls">
+  <button id="modal-btn-play" class="modal-btn-control">
+    <span class="modal-icon-control">a</span>
+  </button>
+  <button id="modal-btn-pause" class="modal-btn-control" disabled>
+    <span class="modal-icon-control">c</span>
+  </button>
+  <button id="modal-btn-stop" class="modal-btn-control" disabled>
+    <span class="modal-icon-control">b</span>
+  </button>
+</div>
+<div id='modal-clock-display'>00:00</div>
+<script type="module">
+    import { listen } from "@tauri-apps/api/event";
+    import { emit } from '@tauri-apps/api/event';
+
+    const timer = document.getElementById("modal-clock-display");
+    const play_btn = document.getElementById("modal-btn-play");
+    const pause_btn = document.getElementById("modal-btn-pause");
+    const stop_btn = document.getElementById("modal-btn-stop");
+
+    const handleButtonClicked = async (event) => {
+      const target = event.currentTarget.id;
+      console.log(target);
+      let btn_pressed;
+      let play_btn_disabled;
+      let pause_btn_disabled;
+      let stop_btn_disabled;
+
+      switch(target) {
+        case "modal-btn-play":
+          btn_pressed = 'play';
+          play_btn_disabled = true;
+          pause_btn_disabled = false;
+          stop_btn_disabled = false;
+          break;
+
+        case "modal-btn-pause":
+          btn_pressed = 'pause';
+          play_btn_disabled = false;
+          pause_btn_disabled = true;
+          stop_btn_disabled = false;
+          break;
+
+        case "modal-btn-stop":
+          btn_pressed = 'stop';
+          play_btn_disabled = false;
+          pause_btn_disabled = true;
+          stop_btn_disabled = true;
+          break;
+
+        default:
+          console.log("Switch case was not found");
+      }
+
+      play_btn.disabled = play_btn_disabled;
+      pause_btn.disabled = pause_btn_disabled;
+      stop_btn.disabled = stop_btn_disabled;
+
+      await emit('modal-timer-btn', btn_pressed)
+      
+    };
+
+
+        
+    play_btn.addEventListener('click', handleButtonClicked)
+    pause_btn.addEventListener('click', handleButtonClicked)
+    stop_btn.addEventListener('click', handleButtonClicked)
+
+    await listen("timer-event",(event) => {
+        timer.textContent = event.payload.data
+    })
+    await listen("timer-btn", (event) => {
+        play_btn.disabled = event.payload.play_disabled
+        pause_btn.disabled = event.payload.pause_disabled
+        stop_btn.disabled = event.payload.stop_disabled
+    })
+
+
+    // if (this.id == 'modal-btn-play') {
+    //   const modPlayBtn = this as HTMLButtonElement
+    //   modPlayBtn.disabled = true
+    //   const modPauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
+    //   modPauseBtn.disabled = false
+    //   const modStopBtn = clockWindow.document.getElementById('modal-btn-stop') as HTMLButtonElement
+    //   modStopBtn.disabled = false
+
+    //   const btn = document.getElementById('btn-play') as HTMLButtonElement
+    //   btn.disabled = true
+    //   const pauseBtn = document.getElementById('btn-pause') as HTMLButtonElement
+    //   pauseBtn.disabled = false
+    //   const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement
+    //   stopBtn.disabled = false
+    // }
+  
+</script>
+</body>
+</html>
