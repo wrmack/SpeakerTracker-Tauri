@@ -1,5 +1,5 @@
 # Speaker Tracker 
-- a multi-platform version of the [Mac app](https://github.com/wrmack/SpeakerTracker) was built with [electron](https://www.electronjs.org/).
+- a multi-platform version of the [Mac app](https://github.com/wrmack/SpeakerTracker) was previously built with [electron](https://www.electronjs.org/).
 - the ongoing development of this app is now built with [Tauri](https://tauri.app)
 
 Speaker Tracker is a desktop app to help with managing formal meetings where, in a debate:

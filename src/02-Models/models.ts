@@ -54,7 +54,8 @@ const getRowsInMembersTable = async () => {
   // await window.myapi.connect()
   // const rows = await window.myapi.selectAll(sql)
   const db = getDb();
-  const result = await db.select(sql);
+  const rows = await db.select(sql) as Array<Object>
+  const result = Object.values(rows[0])[0] as number
   // return Object.values(rows[0])[0] as number
   return result
 }
@@ -69,7 +70,8 @@ const getRowsInGroupsTable = async () => {
   // const rows = await window.myapi.selectAll(sql)
   // return Object.values(rows[0])[0] as number
   const db = getDb();
-  const result = await db.select(sql)
+  const rows = await db.select(sql) as Array<Object>
+  const result = Object.values(rows[0])[0] as number
   return result
 }
 
