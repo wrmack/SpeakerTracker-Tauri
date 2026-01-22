@@ -1,32 +1,3 @@
-// export interface MyAPI {
-  
-//     /** Connect to database */
-//     connect: () => Promise<void>;
-    
-//     /** Initialise database with empty tables if they don't exist */
-//     initDb: () =>  Promise<void>;
-//     close: () => void;
-    
-//     /** Runs SQL statements (can be more than one) in a string with no results returned.
-//      * 
-//      * node-sqlite3 API: db.exec wrapped in db.serialize  */ 
-//     execSQL: (arg0: string) =>  Promise<void>;
-    
-//     /** Runs the SQL query with the specified parameters and 
-//      * calls the callback afterwards if there is an error. 
-//      * 
-//      * node-sqlite3 API: db.run.*/
-//     runSQL: (sql: string, params: any) =>  Promise<void>;
-  
-//     /** Runs the SQL query with the specified parameters and calls 
-//      * the callback with all result rows afterwards. 
-//      * 
-//      * node-sqlite3 API: db.all wrapped in db.serialize.*/ 
-//     selectAll: (sql: string, val?: never[]) => Promise<any[]>;
-  
-//     getPaths: () => {userData: string, appData: string, logs: string, appPath: string };
-// }
-
 /**
  * 
  * Models for managing data for speaking table - they do not mirror database
@@ -92,6 +63,7 @@ interface Entity {
   }
 
 // Property labels lowercase - legacy so cannot change this witout affecting users who have already installed the app
+// Database Members table has uppercase field names. For example, Member.firstName maps to FirstName in database Member table.
 interface Member {
   id: number,
   title: string,

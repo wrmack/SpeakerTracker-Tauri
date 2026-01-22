@@ -1,4 +1,5 @@
 import { entityChanged } from "./display-members-presenter.js"
+import { initialiseMemberDetail } from "../../02-Detail/DisplaySelectedMember/display-selected-member-view.js"
 
 const displayMembers = `
 <div class='dropdown-container'>
@@ -23,6 +24,7 @@ const setupDropdownListeners = function () {
 }
 
 function handleDropDownEvent(this: HTMLElement) {
+  initialiseMemberDetail()
   const el = this as HTMLSelectElement
   entityChanged(el.selectedIndex)
 }

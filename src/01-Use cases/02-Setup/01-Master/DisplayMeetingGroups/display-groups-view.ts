@@ -1,4 +1,5 @@
 import { entityChanged } from "./display-groups-presenter.js"
+import { initialiseGroupDetail } from "../../02-Detail/DisplaySelectedGroup/display-selected-group-view.js"
 
 const displayGroups = `
 <div class='dropdown-container'>
@@ -22,6 +23,7 @@ const setupGroupsEntitiesDropdownListeners = function () {
 }
 
 function handleDropDownEvent(this: HTMLElement) {
+  initialiseGroupDetail()
   const el = this as HTMLSelectElement
   entityChanged(el.selectedIndex)
 }

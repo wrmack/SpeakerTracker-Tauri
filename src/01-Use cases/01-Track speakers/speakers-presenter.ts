@@ -117,8 +117,8 @@ async function populateTables () {
     // Initialise table0 with all members
     if (memberIds != undefined) {
       for (let i = 0; i < memberIds.length; ++i) {
-        const memberReturned = await getMemberWithId(memberIds[i].MemberId)
-        const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
+        const member: Member = await getMemberWithId(memberIds[i].id)
+        // const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
         table0.push(member)
       }
     }
@@ -391,8 +391,8 @@ function populateContextMenu(sectionNumber: number, rowNumber: number) {
       const memberIds = await getMembersForGroupId(currentGroupId)
       for (let i = 0; i < memberIds.length; ++i) {
         if (memberIds[i].MemberId != currentSpkrId) {
-          const memberReturned = await getMemberWithId(memberIds[i].MemberId)
-          const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
+          const member: Member = await getMemberWithId(memberIds[i].Id)
+          // const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
           table0.push(member)
         }
       }

@@ -34,8 +34,8 @@ async function loadGroups () {
   cont.innerHTML = tableRows
 
   // Create custom event whenever a cell is clicked so that the detail view
-  // can know which member to display.  Bubble up and add event listener to document
-  // in display-selected-member-view.  Pass the id of the element clicked.
+  // can know which group to display.  Bubble up and add event listener to document
+  // in display-selected-group-view.  Pass the id of the element clicked.
   const cells = document.querySelectorAll('.group-cell-text')
   cells.forEach(el => { el.addEventListener('click', handleSelection )})
 

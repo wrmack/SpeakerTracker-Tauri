@@ -14,6 +14,11 @@ const displaySelectedMember = `
     </div
   </div>
 `
+const initialiseMemberDetail = function () {
+  const det = document.getElementById('setup-detail') as HTMLElement
+  det.innerHTML = displaySelectedMember
+}
+
 const setupMemberDetailListeners = function () {
   document.addEventListener('member-selected', handleMemberSelected )
 }
@@ -35,4 +40,5 @@ async function handleMemberSelected (ev:Event) {
     setMasterRowIdx(rowNumber)
   }
 }
-export { displaySelectedMember, setupMemberDetailListeners }
+
+export { initialiseMemberDetail, displaySelectedMember, setupMemberDetailListeners }

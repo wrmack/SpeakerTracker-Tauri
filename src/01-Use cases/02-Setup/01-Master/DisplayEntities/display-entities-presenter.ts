@@ -7,18 +7,6 @@ import { getEntities } from '../../../../02-Models/models.js';
 async function loadEntities () {
   const entities = await getEntities()
   const numEntities = entities.length
-  // const mbrsBtn = document.getElementById('setup-sidebar-mbrs-btn') as HTMLButtonElement
-  // const grpBtn = document.getElementById('setup-sidebar-groups-btn') as HTMLButtonElement
-  // const evtBn = document.getElementById('setup-sidebar-events-btn') as HTMLButtonElement
-  // if (entities.length == 0){
-  //   mbrsBtn.disabled = true
-  //   grpBtn.disabled = true
-  //   evtBn.disabled = true
-  // }
-  // else {
-  //   mbrsBtn.disabled = false
-  //   grpBtn.disabled = false
-  // }
   let tableRows = ''
   for (const i in entities) {
     const myId = 'en-r' + i

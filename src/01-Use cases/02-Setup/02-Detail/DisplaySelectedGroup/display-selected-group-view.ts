@@ -11,6 +11,11 @@ const displaySelectedGroup = `
     </div>
   </div>
 `
+const initialiseGroupDetail = function () {
+  const det = document.getElementById('setup-detail') as HTMLElement
+  det.innerHTML = displaySelectedGroup
+}
+
 const setupGroupDetailListeners = function () {
   document.addEventListener('group-selected', handleGroupSelected)
 }
@@ -20,24 +25,23 @@ async function handleGroupSelected (ev: Event) {
     const rowStrg = ev.detail.id.slice(4)
     const rowNumber = parseInt(rowStrg)
     const group = await getGroupAtIdx(rowNumber)
-    const groupMemberIds = await getMembersForGroupId(group.Id)
-    let mbrStrg = ""
-    for (let i = 0; i < groupMemberIds.length; ++i) {
-      const member = await getMemberWithId(groupMemberIds[i].MemberId)
-      mbrStrg += `${member.FirstName} ${member.LastName}`
-      if (i < groupMemberIds.length - 1) {
-        mbrStrg += ", "
+    const groupMembers: Member[] = await getMembersForGroupId(group.Id)
+    let mbrsStrg = ''
+    groupMembers.forEach((mbr, idx) => {
+      mbrsStrg += `${mbr.firstName} ${mbr.lastName}`
+      if (idx < groupMembers.length - 1) {
+        mbrsStrg += ', '
       }
-    }
+    })
     const gnam = document.getElementById('group-name');
     if (!gnam) {return}
     gnam.innerHTML = group.GrpName
     const gmem = document.getElementById('group-members');
     if (!gmem) {return}
-    gmem.innerHTML = mbrStrg
+    gmem.innerHTML = mbrsStrg
     setMasterRowIdx(rowNumber)
   }
 }
 
 
-export { displaySelectedGroup, setupGroupDetailListeners }
+export { initialiseGroupDetail, displaySelectedGroup, setupGroupDetailListeners }
