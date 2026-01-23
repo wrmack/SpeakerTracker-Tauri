@@ -70,8 +70,8 @@ const setupAddGroupListeners = function () {
     for (const i in members) {
       memberItems += "<div class='cbitem'>"
       memberItems += `<input class='chbx' id='cb-${i}' type='checkbox'>`
-      memberItems += `<label for='cb-${i}'>${members[i].FirstName} ${members[i].LastName}</label>`
-      memberItems += `<input id='cb-id-${i}' type='hidden' value=${members[i].Id}>`
+      memberItems += `<label for='cb-${i}'>${members[i].firstName} ${members[i].lastName}</label>`
+      memberItems += `<input id='cb-id-${i}' type='hidden' value=${members[i].id}>`
       memberItems += "</div>"
       const lst = document.getElementById('selection-list');
       if (!lst) {return}

@@ -36,7 +36,7 @@ async function loadMembers () {
   for (const i in members) {
     const myId = 'mr-r' + i
     tableRows += '<tr>'
-    tableRows += "<td><button class='mbr-cell-text master-cell-btn' id=" + myId + ' >' + members[i].FirstName + ' ' + members[i].LastName + '</button> </td>'
+    tableRows += "<td><button class='mbr-cell-text master-cell-btn' id=" + myId + ' >' + members[i].firstName + ' ' + members[i].lastName + '</button> </td>'
     tableRows += '</tr>'
   }
   const memcont = document.getElementById('master-members-content')

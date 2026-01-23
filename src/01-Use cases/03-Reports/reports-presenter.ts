@@ -162,7 +162,7 @@ const getReportDetailsForEventId = async (eventId: number) => {
 
       for (const speech of speeches) {
         const member = await getMemberWithId(speech.MemberId)
-        const memberName = member.FirstName + " " + member.LastName
+        const memberName = member.firstName + " " + member.lastName
         const speechViewModel = { MemberName: memberName, StartTime: speech.StartTime, SpeakingTime: speech.Seconds.toString() } as DebateSpeechViewModel
         speechesArray.push(speechViewModel)        
       }

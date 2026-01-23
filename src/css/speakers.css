@@ -1,3 +1,8 @@
+:root {
+--expand-url: url(../images/expand.png);
+--shrink-url: url(../images/shrink.png);
+--recordon-url: url(../images/red-circle.svg);
+}
 
 /*
 Speakers view
@@ -168,7 +173,7 @@ button#sidebar-clock-btn {
   width: 40px;
   height: 40px;
   margin-top: 30px;
-  background-image: url(../images/expand.png);
+  background-image: var(--expand-url);
   background-size: contain;
   filter: invert(1);
   cursor: pointer;
@@ -226,8 +231,12 @@ button#sidebar-info-btn {
 
 /* Set display to flex, not block, to display it */
 #sidebar-recordon-stop {
-  display: none;  
-  justify-content: center;
+    display: none;
+    justify-content: center;
+    background-image: var(--recordon-url);
+    height: 50px;
+    width: 50px;
+    background-size: cover;
 }
 
 #sidebar-recordon-img {

@@ -124,7 +124,7 @@ const speaker_tracker = `
     <button id='sidebar-info-btn' class='sidebar-norm'><span>d</span></button>
     <button id='sidebar-savedebate-btn' class='sidebar-recording'><span>Save this debate</span></button>
     <button id='sidebar-endmeeting-btn' class='sidebar-recording'><span>End this meeting</span></button>
-    <div id='sidebar-recordon-stop' class='sidebar-recording'><img id='sidebar-recordon-img' src='/src/images/red-circle.svg' /></div>
+    <div id='sidebar-recordon-stop' class='sidebar-recording'></div>
     <div id='sidebar-recordon' class='sidebar-recording'>Recording on</div>
     <button id='sidebar-record-cancel-btn' class='sidebar-recording'><span>Cancel recording</span></button>
   </div>
@@ -839,11 +839,11 @@ function handleClockExpand(this: HTMLElement) {
   const clk = document.getElementById('large-clock-display') as HTMLElement
   if (isClockVisible == false) {
     clk.style.visibility = 'visible'
-    this.style.backgroundImage = 'url("/src/images/shrink.png")'
+    this.style.backgroundImage = 'var(--shrink-url)'
   }
   else {
     clk.style.visibility = 'hidden'
-    this.style.backgroundImage = 'url("/src/images/expand.png")'
+    this.style.backgroundImage = 'var(--expand-url)'
   }
   isClockVisible = isClockVisible == false ? true : false
 }

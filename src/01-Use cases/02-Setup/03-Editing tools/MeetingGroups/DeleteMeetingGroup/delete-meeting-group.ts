@@ -23,12 +23,12 @@ const loadDeleteGroupSheet = async function () {
   ed.innerHTML = deleteGroupView
   const groups = await getGroupsForCurrentEntity()
   const group = groups[masterRowIdx]
-  const groupMemberIds = await getMembersForGroupId(group.Id)
+  const groupMembers = await getMembersForGroupId(group.Id)
   let mbrStrg = ""
-  for (let i = 0; i < groupMemberIds.length; ++i) {
-    const member = await getMemberWithId(groupMemberIds[i].MemberId)
-    mbrStrg += `${member.FirstName} ${member.LastName}`
-    if (i < groupMemberIds.length - 1) {
+  for (let i = 0; i < groupMembers.length; ++i) {
+    const member = await getMemberWithId(groupMembers[i].id)
+    mbrStrg += `${member.firstName} ${member.lastName}`
+    if (i < groupMembers.length - 1) {
       mbrStrg += ", "
     }
   }

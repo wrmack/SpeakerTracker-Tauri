@@ -29,11 +29,11 @@ const loadEditMemberSheet = async function () {
   const members = await getMembersForCurrentEntity()
   const member = members[masterRowIdx]
   const mbrTitle = document.getElementById('input-edit-member-title') as HTMLInputElement
-  mbrTitle.value = member.Title
+  mbrTitle.value = member.title
   const mbrFN = document.getElementById('input-edit-member-firstname') as HTMLInputElement
-  mbrFN.value = member.FirstName
+  mbrFN.value = member.firstName
   const mbrLN = document.getElementById('input-edit-member-lastname') as HTMLInputElement
-  mbrLN.value = member.LastName
+  mbrLN.value = member.lastName
 }
 
 const setupEditMemberListeners = () => {
@@ -67,7 +67,7 @@ async function handleSave() {
   // Change in database
   const members = await getMembersForCurrentEntity()
   const member = members[masterRowIdx]
-  const mysql = `UPDATE Members SET Title = '${title}', FirstName = '${firstName}', LastName = '${lastName}' WHERE Members.Id = ${member.Id};`
+  const mysql = `UPDATE Members SET Title = '${title}', FirstName = '${firstName}', LastName = '${lastName}' WHERE Members.Id = ${member.id};`
   // await execSql(mysql)
   const db = getDb();
   await db.execute(mysql);

@@ -388,10 +388,10 @@ function populateContextMenu(sectionNumber: number, rowNumber: number) {
       // Reset Remaining table with all other members
       const currentSpkrId = lastMember.member.id
       table0 = []
-      const memberIds = await getMembersForGroupId(currentGroupId)
-      for (let i = 0; i < memberIds.length; ++i) {
-        if (memberIds[i].MemberId != currentSpkrId) {
-          const member: Member = await getMemberWithId(memberIds[i].Id)
+      const members = await getMembersForGroupId(currentGroupId)
+      for (let i = 0; i < members.length; ++i) {
+        if (members[i].id != currentSpkrId) {
+          const member: Member = await getMemberWithId(members[i].id)
           // const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
           table0.push(member)
         }
@@ -448,9 +448,9 @@ function populateContextMenu(sectionNumber: number, rowNumber: number) {
       // Put all other members into remaining table
       const memberIds = await getMembersForGroupId(currentGroupId)
       for (let i = 0; i < memberIds.length; ++i) {
-        if (!spokenIds.includes(memberIds[i].MemberId)) {
-          const memberReturned = await getMemberWithId(memberIds[i].MemberId)
-          const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
+        if (!spokenIds.includes(memberIds[i].id)) {
+          const member = await getMemberWithId(memberIds[i].id)
+          // const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
           table0.push(member)
         }
       }

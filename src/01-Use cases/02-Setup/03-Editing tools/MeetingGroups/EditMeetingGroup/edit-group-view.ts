@@ -37,7 +37,7 @@ const editSelectMembersView = `
   <h1>Select members for this meeting group</h1>
   <div id='edit-selection-list'>
     <div class='cbitem'>
-      <input id='e-cb1' type='checkbox'><label for='e-cb1'>One</label>
+      <!-- <input id='e-cb1' type='checkbox'><label for='e-cb1'>One</label> -->
     </div>
   </div>
 `
@@ -50,8 +50,8 @@ const loadEditGroupSheet = async () => {
   const members = await getMembersForGroupId(group.Id)
   let mbrString = ""
   for (let i = 0 ; i < members.length; ++i) {
-    const member = await getMemberWithId(members[i].MemberId)
-    mbrString += `${member.FirstName} ${member.LastName}`
+    const member = await getMemberWithId(members[i].id)
+    mbrString += `${member.firstName} ${member.lastName}`
     if (i < members.length - 1) {
       mbrString += ', '
     }
@@ -82,50 +82,66 @@ const setupEditGroupListeners = () => {
     // Select members sheet - populate list of members
     const members = await getMembersForCurrentEntity()
     let memberItems = ''
-    for (const i in members) {
-      memberItems += "<div class='cbitem'>"
-      memberItems += `<input class='echbx' id='ecb-${i}' type='checkbox'>`
-      memberItems += `<label for='ecb-${i}'>${members[i].FirstName} ${members[i].LastName}</label>`
-      memberItems += `<input id='ecb-id-${i}' type='hidden' value=${members[i].Id}>`
-      memberItems += "</div>"
-      const selist = document.getElementById('edit-selection-list')
-      if (!selist) {return}
-      selist.innerHTML = memberItems
+    if (members.length === 0) {
+      memberItems = `<div class='cbitem'><p>&nbsp;&nbsp;This entity has no members.  Please add members first.</p></div>`
     }
-    // Select members sheet - done button
-    const seldone = document.getElementById('edit-select-members-done-btn') as HTMLElement
-    seldone.addEventListener('click', () => {
-      const selectedMbrs = document.querySelectorAll('.echbx:checked')
-      const selectedMbrsIds = []
-      for (let i = 0 ; i < selectedMbrs.length; ++i) {
-        const elId = selectedMbrs[i].id.slice(4)
-        const el = document.getElementById('ecb-id-' + elId) as HTMLInputElement
-        const id = el.value
-        selectedMbrsIds.push({'MemberId': id})
+    else {
+      for (const i in members) {
+        memberItems += "<div class='cbitem'>"
+        memberItems += `<input class='echbx' id='ecb-${i}' type='checkbox'>`
+        memberItems += `<label for='ecb-${i}'>${members[i].firstName} ${members[i].lastName}</label>`
+        memberItems += `<input id='ecb-id-${i}' type='hidden' value=${members[i].id}>`
+        memberItems += "</div>"
+
       }
-      memberIds = selectedMbrsIds
-      let mbrString = ""
-      for (let i = 0 ; i < selectedMbrs.length; ++i) {
-        const mbr = selectedMbrs[i] as HTMLInputElement
-        if (!mbr) {return}
-        const labls = mbr.labels
-        if (labls && labls.length > 0) {
-          mbrString += `${labls[0].textContent}`
-          if (i < selectedMbrs.length - 1) {
-            mbrString += ', '
+    }
+    const selist = document.getElementById('edit-selection-list')
+    if (!selist) {return}
+    selist.innerHTML = memberItems
+    // Select members sheet - done button
+    const seldone = document.getElementById('edit-select-members-done-btn') as HTMLButtonElement
+    if (members.length === 0) {
+      seldone.disabled = true
+    }
+    else {
+      seldone.addEventListener('click', () => {
+        const selectedMbrs = document.querySelectorAll('.echbx:checked')
+        const selectedMbrsIds = []
+        for (let i = 0 ; i < selectedMbrs.length; ++i) {
+          const elId = selectedMbrs[i].id.slice(4)
+          const el = document.getElementById('ecb-id-' + elId) as HTMLInputElement
+          const id = el.value
+          selectedMbrsIds.push({'MemberId': id})
+        }
+        memberIds = selectedMbrsIds
+        let mbrString = ""
+        for (let i = 0 ; i < selectedMbrs.length; ++i) {
+          const mbr = selectedMbrs[i] as HTMLInputElement
+          if (!mbr) {return}
+          const labls = mbr.labels
+          if (labls && labls.length > 0) {
+            mbrString += `${labls[0].textContent}`
+            if (i < selectedMbrs.length - 1) {
+              mbrString += ', '
+            }
           }
         }
-      }
-      const edgm = document.getElementById('edit-group-members') as HTMLInputElement
-      edgm.value = mbrString
-      const ed = document.getElementById('editing-sheet-selectMembers') as HTMLElement
-      ed.style.left = '100%'
-    })
+        const edgm = document.getElementById('edit-group-members') as HTMLInputElement
+        edgm.value = mbrString
+        const ed = document.getElementById('editing-sheet-selectMembers') as HTMLElement
+        ed.style.left = '100%'
+      })
+  }
   })
 
   // Save button
-  const sv = document.getElementById('edit-group-save-btn') as HTMLElement
-  sv.addEventListener('click', handleSave)
+  const sv = document.getElementById('edit-group-save-btn') as HTMLButtonElement
+  if (memberIds.length === 0) {
+    sv.disabled = true
+  }
+  else {
+    sv.addEventListener('click', handleSave)
+  }
 }
 
 const moveEditSelectMembersSheet = () => {

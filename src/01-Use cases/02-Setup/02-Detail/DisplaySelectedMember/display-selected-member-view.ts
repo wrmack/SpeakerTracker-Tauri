@@ -34,9 +34,9 @@ async function handleMemberSelected (ev:Event) {
     const mfn = document.getElementById('mbr-first-name')
     const mln = document.getElementById('mbr-last-name')
     if (!mt || !mfn || !mln) {return}
-    mt.innerHTML = member.Title
-    mfn.innerHTML = member.FirstName
-    mln.innerHTML = member.LastName
+    mt.innerHTML = member.title
+    mfn.innerHTML = member.firstName
+    mln.innerHTML = member.lastName
     setMasterRowIdx(rowNumber)
   }
 }

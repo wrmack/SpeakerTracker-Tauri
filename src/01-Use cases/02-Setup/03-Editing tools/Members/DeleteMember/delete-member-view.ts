@@ -28,11 +28,11 @@ const loadDeleteMemberSheet = async function () {
   const members = await getMembersForCurrentEntity()
   const member = members[masterRowIdx]
   const delMbrTitle = document.getElementById('input-delete-member-title') as HTMLInputElement
-  delMbrTitle.value = member.Title
+  delMbrTitle.value = member.title
   const delMbrFN = document.getElementById('input-delete-member-firstname') as HTMLInputElement
-  delMbrFN.value = member.FirstName
+  delMbrFN.value = member.firstName
   const delMbrLN = document.getElementById('input-delete-member-lastname') as HTMLInputElement
-  delMbrLN.value = member.LastName
+  delMbrLN.value = member.lastName
 }
 
 const setupDeleteMemberListeners = function () {
@@ -60,7 +60,7 @@ async function handleDelete() {
   const member = members[masterRowIdx]
 
   // Delete in database
-  await deleteMemberWithId(member.Id)
+  await deleteMemberWithId(member.id)
 
   // Close the panel
   const edSHt = document.getElementById('editing-sheet') as HTMLElement

@@ -1,4 +1,4 @@
-import { getGroupAtIdx, getMembersForGroupId, getMemberWithId } from '../../../../02-Models/models.js'
+import { getGroupAtIdx, getMembersForGroupId } from '../../../../02-Models/models.js'
 import { setMasterRowIdx } from '../../../../03-State/state.js'
 
 const displaySelectedGroup = `

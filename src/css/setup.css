@@ -183,12 +183,12 @@ div#selected-ent {
 }
 
 .detail-value {
-  width: 60%;
+  width: 70%;
   margin-right: 20px;
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
-  justify-content: flex-end;
+  justify-content: flex-start;
   color: #aaa;
 }
 

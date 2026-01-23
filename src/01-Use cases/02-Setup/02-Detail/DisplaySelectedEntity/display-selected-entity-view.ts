@@ -34,7 +34,7 @@ export const setupEntityDetailListeners = function () {
       const members = await getMembersForEntityId(entity.Id) 
       let mbrsStrg = ''
       members.forEach((mbr, idx) => {
-        mbrsStrg += `${mbr.FirstName} ${mbr.LastName}`
+        mbrsStrg += `${mbr.firstName} ${mbr.lastName}`
         if (idx < members.length - 1) {
           mbrsStrg += ', '
         }
