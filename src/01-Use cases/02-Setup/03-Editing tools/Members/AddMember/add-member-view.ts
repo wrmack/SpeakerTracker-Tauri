@@ -73,7 +73,9 @@ async function handleSave() {
 
   // Save to database
   const entityId = currentEntityId
+
   const member = {
+    id: 0, // id will be set by database
     title: newMemberTitle,
     firstName: newMemberFirstName,
     lastName: newMemberLastName,

@@ -50,14 +50,14 @@ async function loadGroupsDropdownForEvents () {
 async function loadEvents () {
   const events = await getOpenEventsForCurrentGroup()
   let tableRows = ''
-  for (const i in events) {
-    const isoDateStr = events[i].EventDate
+  events.forEach( (event, i) => {
+    const isoDateStr = event.EventDate
     const fullString = formatIsoDate(isoDateStr)
     const myId = 'ev-r' + i
     tableRows += '<tr>'
     tableRows += "<td><button class='evt-cell-text master-cell-btn' id=" + myId + ' >' + fullString + '</button> </td>'
     tableRows += '</tr>'
-  }
+  })
   const cont = document.getElementById('master-events-content')
   if (!cont) { return}
   cont.innerHTML = tableRows
@@ -97,7 +97,7 @@ function handleSelection(this: HTMLElement)  {
 async function eventsEntityChanged(idx: number) {
   const ents = await getEntities()
   const ent = ents[idx]
-  setCurrentEntityId(ent.Id)
+  await setCurrentEntityId(ent.Id)
   await loadGroupsDropdownForEvents()
   await eventsGroupChanged(0)
 }
@@ -105,8 +105,8 @@ async function eventsEntityChanged(idx: number) {
 async function eventsGroupChanged(idx: number) {
   const grps = await getGroupsForCurrentEntity()
   const grp = grps[idx]
-  setCurrentGroupId(grp.Id)
-  loadEvents()
+  await setCurrentGroupId(grp.Id)
+  await loadEvents()
 }
 
 export { loadEntitiesDropdownForEvents, loadGroupsDropdownForEvents, loadEvents, eventsEntityChanged, eventsGroupChanged }

@@ -18,7 +18,7 @@ import {
 } from "../../03-State/state.js"
 
 import { formatIsoDate } from "../../04-Utils/utils.js"
-
+import { Entity, Group, GroupEvent } from "../../types/interfaces.js"
 
 async function populateEntityDropdown() {
   let options = ''
@@ -29,7 +29,7 @@ async function populateEntityDropdown() {
     if (entEl) {entEl.classList.add("mtgsetup-prompt") }
   }
   else {
-    entities.forEach( (entity) => {
+    entities.forEach( (entity:Entity) => {
       if (entity.Id == currentEntityId) {
         options += `<option selected>${entity.EntName}</option>`
       }
@@ -50,7 +50,7 @@ async function populateGroupDropdown() {
     if (entEl) {entEl.classList.add("mtgsetup-prompt") }
   }
   else {
-    groups.forEach( async (group) => {
+    groups.forEach( (group: Group) => {
       if (group.Id == currentGroupId) {
         options += `<option selected>${group.GrpName}</option>`
       }
@@ -72,7 +72,7 @@ async function populateEventsDropdown() {
   }
   else {
     let idx = 0
-    events.forEach( async (event) => {
+    events.forEach( (event: GroupEvent) => {
       const date = formatIsoDate(event.EventDate)
       // Select the first event
       if (idx == 0) {
@@ -112,11 +112,15 @@ async function updateDataForNewMeeting(entityIdx: number, groupIdx: number, even
  * @param newEntityIdx The index of the current entity.
  */
 async function entityChanged(newEntityIdx: number) {
-    const ent = await getEntityAtIdx(newEntityIdx)
-    await setCurrentEntityId(ent.Id)
+    const result: Entity | Error = await getEntityAtIdx(newEntityIdx)
+    if (result instanceof Error) {
+        console.error('Failed to get entity:', result.message)
+        return
+    }
+    await setCurrentEntityId(result.Id)
 }
 
-async function eventDateChanged(idx: number) {
+function eventDateChanged(idx: number) {
   console.log('eventDateChanged incomplete' + idx)
 }
 

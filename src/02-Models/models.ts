@@ -5,11 +5,22 @@ import {
   currentDebateNumber, 
   // currentDebateSectionNumber 
 } from "../03-State/state.js";
-// import { MyAPI, Entity, Group, GroupEvent, DebateSection } from "../types/interfaces"
 
 import { getDb } from "../content.js";
+import { Entity, Member, Group, GroupEvent, DebateSpeech, DebateSection } from "../types/interfaces.js";
 
-
+interface GrpId {
+  Id: number 
+}
+interface EvtId {
+  Id: number 
+}
+interface DbMember {
+  Id: number,
+  Title: string,
+  FirstName: string,
+  LastName: string
+}
 
 // Rows in tables
 
@@ -20,11 +31,9 @@ import { getDb } from "../content.js";
 const getRowsInEntitiesTable = async () => {
   const db = getDb()
   const sql = 'SELECT COUNT(*) FROM Entities;'
-  // await window.myapi.connect()
-  // const rows = await window.myapi.selectAll(sql) 
   // rows looks like [{COUNT(*): 0}] - an array with one item which is an object
   // Get values for the first item in the rows array and then take the first value
-  const rows = await db.select(sql) as Array<Object>
+  const rows: object[] = await db.select(sql) 
   const result = Object.values(rows[0])[0] as number
   console.log('getRowsInEntitiesTable: ' + result)
   return result
@@ -37,7 +46,7 @@ const getRowsInEntitiesTable = async () => {
 const getRowsInMembersTable = async () => {
   const sql = 'SELECT COUNT(*) FROM Members;'
   const db = getDb();
-  const rows = await db.select(sql) as Array<Object>
+  const rows: object[] = await db.select(sql)
   const result = Object.values(rows[0])[0] as number
   return result
 }
@@ -49,7 +58,7 @@ const getRowsInMembersTable = async () => {
 const getRowsInGroupsTable = async () => {
   const sql = 'SELECT COUNT(*) FROM Groups;'
   const db = getDb();
-  const rows = await db.select(sql) as Array<Object>
+  const rows: object[] = await db.select(sql) 
   const result = Object.values(rows[0])[0] as number
   return result
 }
@@ -65,7 +74,7 @@ const getRowsInGroupsTable = async () => {
 const getEntities = async function () {
   const sql = 'SELECT * FROM Entities ORDER BY EntName;'
   const db = getDb()
-  const result = await db.select(sql) as Array<Entity>
+  const result: Entity[] = await db.select(sql)
   return result
 }
 
@@ -95,8 +104,8 @@ const getEntityAtIdx = async (idx: number) => {
 const getEntityWithId = async (id: number) => {
   const sql = `SELECT * FROM Entities WHERE Entities.Id = ${id};`
   const db = getDb()
-  const ent = await db.select(sql) as Array<Entity>
-  return ent[0] as Entity
+  const ent: Entity[] = await db.select(sql) 
+  return ent[0]
 }
 
 const addEntity = async (name: string) => {
@@ -106,22 +115,52 @@ const addEntity = async (name: string) => {
 }
 
 const deleteEntityWithId = async (id: number) => {
+
   const db = getDb();
-  const sql = `
-  DELETE FROM Entities WHERE Entities.Id = ${id};
-  DELETE FROM Members WHERE Members.Entity = ${id};
-  `
+  // Delete from Entities table
+  let sql = `DELETE FROM Entities WHERE Entities.Id = ${id};`
+  await db.execute(sql);
+
+  // Delete from Members table
+  sql = `DELETE FROM Members WHERE Members.Entity = ${id};`
+  await db.execute(sql);
+
+  // Delete from State table
+  sql = `DELETE FROM State WHERE State.EntityId = ${id};`
   await db.execute(sql);
   
-  const sql2 = `DELETE FROM Groups WHERE Groups.Entity = ${id} RETURNING Groups.Id;`
-  const grpIds = await db.select(sql2) as Array<Number>;
+  // Delete this Entity's groups
+  sql = `DELETE FROM Groups WHERE Groups.Entity = ${id} RETURNING Groups.Id;`
+  const grpIds: GrpId[] = await db.select(sql)
+  
+  // Using the returned Group Ids, delete groups from GroupMembers table
 
-  let sql3 = ''
+  sql = ''
   grpIds.forEach( (grpId) => {
-    sql3 += `DELETE FROM GroupMembers WHERE GroupMembers.GroupId = ${grpId};`
+    sql += `DELETE FROM GroupMembers WHERE GroupMembers.GroupId = ${grpId.Id};`
   })
-  if (sql3.length > 0) {
-    await db.execute(sql3)
+  if (sql.length > 0) {
+    await db.execute(sql)
+  }
+
+  // Using the returned Group Ids, delete groups from Events table, returning Event Ids for these groups
+  sql = ''
+  grpIds.forEach( (grpId) => {
+    sql += `DELETE FROM Events WHERE Events.GroupId = ${grpId.Id} RETURNING Events.Id;`
+  })
+  const eventIds: EvtId[] = await db.select(sql)
+
+  // Using the returned Event Ids, delete debates, debate sections and speeches for these events
+  sql = '' 
+  eventIds.forEach( (evtId) => {
+    sql += `
+      DELETE FROM Debates WHERE Debates.EventId = ${evtId.Id};
+      DELETE FROM DebateSections WHERE DebateSections.EventId = ${evtId.Id};
+      DELETE FROM DebateSpeeches WHERE DebateSpeeches.EventId = ${evtId.Id};
+    `
+  })
+  if (sql.length > 0) {
+    await db.execute(sql)
   }
 }
 
@@ -135,7 +174,7 @@ const entityIdExists = async (id: number) => {
   // await window.myapi.connect()
   // const ent = await window.myapi.selectAll(mySql)
   const db = getDb()
-  const ent = await db.select(mySql) as Array<Object>
+  const ent: object[] = await db.select(mySql)
   if (ent.length == 0) {
     return false
   }
@@ -161,7 +200,7 @@ const getMemberAtIdx = async (idx: number) => {
 const getMemberWithId = async (id: number) => {
   const mysql = `SELECT * FROM Members WHERE Members.Id = ${id}`
   const db = getDb();
-  const databaseMember = await db.select(mysql) as Array<any>;
+  const databaseMember: DbMember[] = await db.select(mysql)
   const member: Member = {id: databaseMember[0].Id, title: databaseMember[0].Title, firstName: databaseMember[0].FirstName, lastName: databaseMember[0].LastName}
   return member
 }
@@ -174,7 +213,7 @@ const getMembersForCurrentEntity = async function () {
   const entityId = currentEntityId
   const sql = 'SELECT Id, Title, FirstName, LastName FROM Members WHERE Members.Entity = ' + entityId.toString() + ' ORDER BY LastName, FirstName;'
   const db = getDb();
-  const dbMembers = await db.select(sql) as Array<any>;
+  const dbMembers: DbMember[] = await db.select(sql)
   const members: Member[] = []
   dbMembers.forEach( (dbmbr) => {
     const member: Member = {id: dbmbr.Id, title: dbmbr.Title, firstName: dbmbr.FirstName, lastName: dbmbr.LastName}
@@ -190,7 +229,7 @@ const getMembersForCurrentEntity = async function () {
 const getMembersForEntityId = async (entityId: number) => {
   const sql = `SELECT Title, FirstName, LastName FROM Members WHERE Members.Entity = ${entityId} ORDER BY LastName, FirstName;`
   const db = getDb()
-  const dbMembers = await db.select(sql) as Array<any>
+  const dbMembers: DbMember[] = await db.select(sql)
   const members: Member[] = []
   dbMembers.forEach( (dbmbr) => {
     const member: Member = {id: dbmbr.Id, title: dbmbr.Title, firstName: dbmbr.FirstName, lastName: dbmbr.LastName}
@@ -200,7 +239,7 @@ const getMembersForEntityId = async (entityId: number) => {
 }
 
 /** Add a member */ 
-const addMember = async function (member: any) {
+const addMember = async function (member: Member) {
   const sql = 'INSERT INTO Members (Title , FirstName, LastName, Entity) VALUES ($1, $2, $3, $4)'
   // await window.myapi.connect()
   // window.myapi.runSQL(sql, {
@@ -242,7 +281,7 @@ const getGroupsForCurrentEntity = async function () {
   const entityId = currentEntityId
   const sql = `SELECT Id, GrpName FROM Groups WHERE Groups.Entity = ${entityId} ORDER BY GrpName;`
   const db = getDb();
-  const result = await db.select(sql) as Array<Group>;
+  const result: Group[] = await db.select(sql)
   return result
 }
 
@@ -253,7 +292,7 @@ const getGroupsForCurrentEntity = async function () {
 const getGroupIdsForEntityId = async function (id: number) {
   const sql = `SELECT Id FROM GROUPS WHERE Groups.Entity = ${id} ORDER BY GrpName;`
   const db = getDb()
-  const result = await db.select(sql) as Array<any>
+  const result: GrpId[] = await db.select(sql) 
   return result
 }
 
@@ -264,7 +303,7 @@ const getGroupIdsForEntityId = async function (id: number) {
 const getGroupsForEntityId = async function (id: number) {
   const sql = `SELECT * FROM GROUPS WHERE Groups.Entity = ${id} ORDER BY GrpName;`
   const db = getDb()
-  const result = await db.select(sql) as Array<Group>;
+  const result: Group[] = await db.select(sql)
   return result
 }
 
@@ -275,12 +314,12 @@ const getGroupAtIdx = async (idx: number) => {
 }
 
 /** Add a meeting group and return the new Id */ 
-const addGroup = async function (group: any) {
+const addGroup = async function (group: {name: string, entity: number}) {
   const sql = `
     INSERT INTO Groups (GrpName, Entity) VALUES ('${group.name}', ${group.entity}) RETURNING Id;
   `
   const db = getDb();
-  const groupId = await db.select(sql) as Array<Group>;
+  const groupId: Group[] = await db.select(sql) 
   return groupId[0].Id
 }
 
@@ -290,8 +329,8 @@ const addGroup = async function (group: any) {
 const getGroupForId = async (id: number) => {
   const sql = `SELECT * FROM Groups WHERE Groups.Id = ${id};`
   const db = getDb()
-  const group = await db.select(sql) as Array<any>
-  return group == undefined ? undefined : group[0] as Group
+  const group: (Array<Group> | undefined) = await db.select(sql)
+  return group == undefined ? undefined : group[0] 
 }
 
 /** 
@@ -301,13 +340,13 @@ const getGroupForId = async (id: number) => {
  const getMembersForGroupId = async (id: number) => {
   const sql = `SELECT MemberId FROM GroupMembers WHERE GroupId = ${id};`
   const db = getDb();
-  const mbrIds = await db.select(sql) as Array<any>
-  let grpMembers = new Array<Member>  
+  const mbrIds: {MemberId: number}[] = await db.select(sql) 
+  const grpMembers = new Array<Member>  
   for (let i = 0; i < mbrIds.length; ++i) {
     const member: Member = await getMemberWithId(mbrIds[i].MemberId)
     grpMembers.push(member)
   }
-  const result = grpMembers.sort( (a: any, b: any) => {
+  const result = grpMembers.sort( (a: Member, b: Member) => {
     if (a !== undefined && b !== undefined) {
       if (a.lastName < b.lastName) { return -1 }
     }
@@ -323,10 +362,8 @@ const getGroupForId = async (id: number) => {
  */
 const groupIdExists = async (id: number) => {
   const sql = `SELECT * FROM Groups WHERE Id = ${id}`
-  // await window.myapi.connect()
-  // const group = await window.myapi.selectAll(sql)
   const db = getDb()
-  const group = await db.select(sql) as Array<any>
+  const group: Group[] = await db.select(sql)
   if (group.length == 0) {
     return false
   }
@@ -386,8 +423,6 @@ const groupIdExists = async (id: number) => {
 
 const addEvent = async (eventDate: string, groupId: number) => {
   const sql = 'INSERT INTO Events (GroupId, EventDate, Closed) VALUES ($1, $2, 0);'
-  // await window.myapi.connect()
-  // await window.myapi.runSQL(sql, {$groupId: groupId, $eventDate: eventDate})
   const db = getDb()
   await db.execute(sql,[groupId,eventDate])
 }
@@ -399,20 +434,16 @@ const addEvent = async (eventDate: string, groupId: number) => {
 const getOpenEventsForCurrentGroup = async () => {
   const groupId = currentGroupId
   const sql = `SELECT Id, GroupId, EventDate FROM Events WHERE (Events.GroupId = ${groupId} AND (Events.Closed = 0 OR Events.Closed IS NULL)) ORDER BY EventDate;`
-  // await window.myapi.connect()
-  // return await window.myapi.selectAll(sql) as GroupEvent[]
   const db = getDb()
-  const result = await db.select(sql) as Array<any>
+  const result: GroupEvent[] = await db.select(sql)
   return result
 }
 
 const getClosedEventsForCurrentGroup = async () => {
   const groupId = currentGroupId
   const sql = `SELECT Id, GroupId, EventDate FROM Events WHERE (Events.GroupId = ${groupId} AND Events.Closed = 1) ORDER BY EventDate;`
-  // await window.myapi.connect()
-  // const res = await window.myapi.selectAll(sql) as GroupEvent[]
   const db = getDb()
-  const result = await db.select(sql) as GroupEvent[]
+  const result: GroupEvent[] = await db.select(sql) 
   return result
 }
 
@@ -428,10 +459,8 @@ const closeCurrentEvent = async () => {
 
   // Check whether any speeches for the current debate
   const selSql = `SELECT * FROM DebateSpeeches WHERE (DebateSpeeches.EventId = ${eventId} AND DebateSpeeches.DebateNumber = ${debateNum});`
-  // await window.myapi.connect()
-  // const speeches =  await window.myapi.selectAll(selSql) 
   const db = getDb()
-  const speeches = await db.select(selSql) as Array<any>
+  const speeches: DebateSpeech[] = await db.select(selSql)
 
   let sql: string
   // Save debate was pressed before 'End this meeting' and so an empty debate was created without speeches
@@ -445,8 +474,6 @@ const closeCurrentEvent = async () => {
   else {
     sql = `UPDATE Events SET Closed = 1 WHERE Events.Id = ${eventId};`
   }
-  // await window.myapi.connect()
-  // await window.myapi.execSQL(sql)
   await db.select(sql)
 }
 
@@ -458,8 +485,6 @@ const resetCurrentEvent = async () => {
   DELETE FROM DebateSections WHERE DebateSections.EventId = ${eventId};
   DELETE FROM Debates WHERE Debates.EventId = ${eventId}; 
   `
-  // await window.myapi.connect()
-  // await window.myapi.execSQL(sql)
   const db = getDb()
   await db.execute(sql)
 }
@@ -478,12 +503,9 @@ const getOpenEventAtIdx = async (idx: number) => {
 
 const getEventWithId = async (eventId: number) => {
   const sql = `SELECT GroupId, EventDate FROM Events WHERE Events.Id = ${eventId};`
-  // await window.myapi.connect()
-  // const evts = await window.myapi.selectAll(sql) 
-  // return evts[0] as GroupEvent
   const db = getDb()
-  const evts = await db.select(sql) as Array<any>
-  return evts[0] as GroupEvent
+  const evts: GroupEvent[] = await db.select(sql)
+  return evts[0]
 }
 
 const deleteEvent = async (eventId: number) => {
@@ -495,31 +517,23 @@ const deleteEvent = async (eventId: number) => {
     DELETE FROM DebateSections WHERE DebateSections.EventId = ${eventId};
     DELETE FROM DebateSpeeches WHERE DebateSpeeches.EventId = ${eventId};
   `
-  // await window.myapi.connect()
-  // await window.myapi.execSQL(sql)
   const db = getDb()
   await db.execute(sql)
 }
 
 const addDebate = async (eventId: number, debateNumber: number, note?: string) =>  {
   const sql = `INSERT INTO Debates (EventId, DebateNumber, Note ) VALUES (${eventId}, ${debateNumber}, '${note}');`
-  // await window.myapi.connect()
-  // await window.myapi.selectAll(sql)
   const db = getDb()
   await db.execute(sql)
 }
 
 const updateDebateNote = async (eventId: number, debateNumber: number, note: string) => {
   const sql = `UPDATE Debates SET Note = '${note}' WHERE EventId = ${eventId} AND DebateNumber = ${debateNumber};`
-  // await window.myapi.connect()
-  // await window.myapi.selectAll(sql)
   const db = getDb()
   await db.execute(sql)
 }
 const getDebatesForEventId = async (eventId: number) => {
   const sql = `SELECT EventId, DebateNumber, Note FROM Debates WHERE Debates.EventId = ${eventId};`
-  // await window.myapi.connect()
-  // return await window.myapi.selectAll(sql)
   const db = getDb()
   const result = await db.select(sql)
   return result
@@ -527,16 +541,12 @@ const getDebatesForEventId = async (eventId: number) => {
 
 const addDebateSection = async (eventId: number,  debateNumber: number, sectionNumber: number, sectionName: string) => {
   const sql = `INSERT INTO DebateSections (EventId, DebateNumber, SectionNumber, SectionName ) VALUES (${eventId}, ${debateNumber}, ${sectionNumber}, '${sectionName}' );`
-  // await window.myapi.connect()
-  // await window.myapi.selectAll(sql)
   const db = getDb()
   await db.execute(sql)
 }
 
 const getDebateSections = async (eventId: number, debateNumber: number) => {
   const sql = `SELECT SectionNumber, SectionName FROM DebateSections WHERE DebateSections.EventId = ${eventId} AND DebateSections.DebateNumber = ${debateNumber}; `
-  // await window.myapi.connect()
-  // return await window.myapi.selectAll(sql) as DebateSection[]
   const db = getDb()
   const result = await db.select(sql)
   return result as DebateSection[]
@@ -544,16 +554,12 @@ const getDebateSections = async (eventId: number, debateNumber: number) => {
 
 const addDebateSpeech = async (eventId: number, debateNumber: number, sectionNumber: number, memberId: number, startTime: string, seconds: number ) => {
   const sql = `INSERT INTO DebateSpeeches (EventId, DebateNumber, SectionNumber, MemberId, StartTime, Seconds) VALUES (${eventId}, ${debateNumber}, ${sectionNumber}, ${memberId}, '${startTime}', ${seconds} );`
-  // await window.myapi.connect()
-  // await window.myapi.selectAll(sql)
   const db = getDb()
   await db.execute(sql)
 }
 
 const getDebateSectionSpeeches = async (eventId: number, debateNumber: number, sectionNumber: number) => {
   const sql = `SELECT MemberID, StartTime, Seconds FROM DebateSpeeches WHERE DebateSpeeches.EventId = ${eventId} AND DebateSpeeches.DebateNumber = ${debateNumber} AND DebateSpeeches.SectionNumber = ${sectionNumber};`
-  // await window.myapi.connect()
-  // return await window.myapi.selectAll(sql)
   const db = getDb()
   const result = await db.select(sql)
   return result
@@ -586,7 +592,6 @@ enum SectionType {
 }
 
 export {
-//   execSql,
   getRowsInEntitiesTable,
   getRowsInMembersTable,
   getRowsInGroupsTable,

@@ -62,7 +62,7 @@ async function initialise() {
   await db.execute(sql)
   await resetTablesWithSavedData()
 
-  loadSpeakersView()
+  await loadSpeakersView()
 }
 
 
@@ -74,9 +74,11 @@ async function initialise() {
 const speakersbtn = document.getElementById('speakers-btn')
 if (speakersbtn) {
   speakersbtn.addEventListener('click', () => {
-    removeActiveClasses()
-    speakersbtn.classList.add('active')
-    loadSpeakersView()
+    void (async () => {
+      removeActiveClasses()
+      speakersbtn.classList.add('active')
+      await loadSpeakersView()
+    })()
   })
 }
 
@@ -84,9 +86,11 @@ if (speakersbtn) {
 const setupbtn = document.getElementById('setup-btn')
 if (setupbtn) {
   setupbtn.addEventListener('click', () => {
-    removeActiveClasses()
-    setupbtn.classList.add('active')
-    loadSetupView()
+    void (async function() {
+      removeActiveClasses()
+      setupbtn.classList.add('active')
+      await loadSetupView()     
+    })()
   })
 }
 
@@ -94,9 +98,11 @@ if (setupbtn) {
 const reportsbtn = document.getElementById('reports-btn')
 if (reportsbtn) {
   reportsbtn.addEventListener('click', () => {
-    removeActiveClasses()
-    reportsbtn.classList.add('active')
-    loadReportsView()
+    void (async () => {
+      removeActiveClasses()
+      reportsbtn.classList.add('active')
+      await loadReportsView()
+    })()
   })
 }
 
@@ -113,8 +119,8 @@ async function loadSpeakersView () {
   }
   const isFirstTime = await populateTables()
   setupArrowButtonListeners()
-  setupTimerControlListeners()
-  loadSetupMeetingSheet()
+  await setupTimerControlListeners()
+  await loadSetupMeetingSheet()
   setupMeetingSetupListeners()
   setupResetListener()
   setupInfoListener()
@@ -124,7 +130,7 @@ async function loadSpeakersView () {
   setupMeetingEventListeners()
   if (isFirstTime) {
     // Is first time (no entities set up yet) so display info window
-    handleInfoButtonClick()
+    await handleInfoButtonClick()
   }
 }
 
@@ -133,9 +139,9 @@ async function loadSetupView () {
   const container = document.getElementById('content-container') 
   if (container) {  container.innerHTML = setupView}
   setupEditItemListeners()
-  setupSidebarListeners()
+  await setupSidebarListeners()
   // Initial view shows entities
-  showEntities()
+  await showEntities()
   const sident = document.getElementById('setup-sidebar-ent-btn')
   if (!sident) {return}
   sident.classList.add('setup-sidebar-btn-selected')
@@ -145,7 +151,7 @@ async function loadSetupView () {
 async function loadReportsView () {
   const container = document.getElementById('content-container') 
   if (container) {  container.innerHTML = reportsView}
-  setupReports()
+  await setupReports()
 }
 
 // Helpers
@@ -159,6 +165,6 @@ function removeActiveClasses() {
 }
 
 // Start by calling initialise
-initialise()
+await initialise()
 
 export {getDb}

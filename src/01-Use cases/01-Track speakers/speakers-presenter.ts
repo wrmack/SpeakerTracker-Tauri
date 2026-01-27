@@ -1,3 +1,4 @@
+
 import { 
   getEntities, 
   // getEntityAtIdx,
@@ -38,11 +39,12 @@ import {
   getTableState
 } from "../../03-State/state.ts"
 
-// import {
-//   ListMember,
-//   Member,
-//   SectionList
-// } from "../../types/interfaces"
+import {
+  GroupEvent,
+  ListMember,
+  Member,
+  SectionList
+} from "../../types/interfaces.js"
 
 import { 
   // formatIsoDate, 
@@ -91,12 +93,14 @@ async function populateTables () {
 
   // Get saved entity and group ids, if any.
   const savedEntGpId = await getSavedEntGroupId()
-  if (savedEntGpId != undefined) {
-    setCurrentEntityId(savedEntGpId.entId)
-    setCurrentGroupId(savedEntGpId.grpId)
+  if (savedEntGpId.entId != undefined) {
+    await setCurrentEntityId(savedEntGpId.entId)
+  } 
+  if (savedEntGpId.grpId != undefined) {
+     await setCurrentGroupId(savedEntGpId.grpId)
   } 
   const group = await getGroupForId(currentGroupId)
-  let memberIds:any[] = []
+  let memberIds:Member[] = []
   if (group != undefined) {
     memberIds = await getMembersForGroupId(currentGroupId)
     const groupName = group.GrpName
@@ -118,7 +122,6 @@ async function populateTables () {
     if (memberIds != undefined) {
       for (let i = 0; i < memberIds.length; ++i) {
         const member: Member = await getMemberWithId(memberIds[i].id)
-        // const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
         table0.push(member)
       }
     }
@@ -203,7 +206,7 @@ async function populateTables () {
     let tableRows2 = ''
     // Heading Main debate or Amendment
     tableRows2 += `<tr class='spkg-table-row'>`
-    if (section.sectionType == SectionType.amendment) {
+    if ((section.sectionType as SectionType) === SectionType.amendment) {
       tableRows2 += `<th>
         <div class='spkg-table-row-header'>
         ${section.sectionHeader}
@@ -266,7 +269,7 @@ async function populateTables () {
                 // Rendering is left to right, starting with the pause button
 
                 // Render the pause button
-                if (listMbr.timerButtonMode == TimerButtonMode.pause_stop) {
+                if ((listMbr.timerButtonMode as TimerButtonMode) === TimerButtonMode.pause_stop) {
                   // Disabled if a member is speaking and it isn't the current member 
                   if (aMemberIsSpeaking && !listMbr.timerIsActive) {
                     tableRows2 += `<button class='spkg-table-cell-timer-pause' disabled>c</button>`
@@ -276,7 +279,7 @@ async function populateTables () {
                   }
                 }
                 // Render the left play button
-                if (listMbr.timerButtonMode == TimerButtonMode.play_stop) {
+                if ((listMbr.timerButtonMode as TimerButtonMode) === TimerButtonMode.play_stop) {
                   if (aMemberIsSpeaking && !listMbr.timerIsActive) {
                     tableRows2 += `<button class='spkg-table-cell-timer-play2' disabled>a</button>`
                   }
@@ -291,7 +294,7 @@ async function populateTables () {
                   tableRows2 += `<span class='spkg-table-cell-timer'>${timeString}</span>`
                 }
                 // Render the right play button     
-                if (listMbr.timerButtonMode == TimerButtonMode.play) {
+                if ((listMbr.timerButtonMode as TimerButtonMode) === TimerButtonMode.play) {
                   if (aMemberIsSpeaking && !listMbr.timerIsActive) {
                     tableRows2 += `<button class='spkg-table-cell-timer-play' disabled>a</button>`
                   }
@@ -300,8 +303,8 @@ async function populateTables () {
                   }
                 }
                 // Render the stop button
-                if (listMbr.timerButtonMode == TimerButtonMode.pause_stop || 
-                  listMbr.timerButtonMode == TimerButtonMode.play_stop ) {
+                if ((listMbr.timerButtonMode as TimerButtonMode) === TimerButtonMode.pause_stop || 
+                  (listMbr.timerButtonMode as TimerButtonMode) === TimerButtonMode.play_stop ) {
                     if (aMemberIsSpeaking && !listMbr.timerIsActive) {
                       tableRows2 += `<button class='spkg-table-cell-timer-stop' disabled>b</button>`
                     }
@@ -310,6 +313,7 @@ async function populateTables () {
                     }
                 }
               }
+              tableRows2 += 
               `
             </div>
           </div>
@@ -329,7 +333,7 @@ async function populateTables () {
       tb.innerHTML = tableRows2
     }
     // Event listener on Amendment header
-    if (section.sectionType == SectionType.amendment) {
+    if ((section.sectionType as SectionType) === SectionType.amendment) {
       const hdr = tb.querySelector('.spkg-table-row-header')
       hdr?.addEventListener('click', handleCollapsibleClick)
     }
@@ -358,7 +362,7 @@ function populateContextMenu(sectionNumber: number, rowNumber: number) {
 
   if ((sectionNumber == numSectionsInTable - 1) && 
     (rowNumber == numSpeakersInSection -1) && 
-    (section.sectionType == SectionType.mainDebate)) {
+    ((section.sectionType as SectionType) === SectionType.mainDebate)) {
     const menu = `
       <div class='context-row'><button id='cm-amend'>Moves amendment</button></div>
       <div class='context-row'><button id='cm-again'>Speaks again</button></div>
@@ -366,100 +370,105 @@ function populateContextMenu(sectionNumber: number, rowNumber: number) {
     contextMenu.innerHTML = menu
     const againBtn = document.getElementById('cm-again') as HTMLButtonElement
     const mbrClicked = section.sectionMembers[rowNumber]
-    againBtn.addEventListener('click',handleContextMenuSpeakAgain.bind(null,mbrClicked,numSectionsInTable))    
+    againBtn.addEventListener('click', () => { 
+      void (async () => {
+        await handleContextMenuSpeakAgain(mbrClicked, numSectionsInTable)
+      })()
+    })  
     const amendBtn = document.getElementById('cm-amend') as HTMLButtonElement
-    amendBtn.addEventListener('click', async () => {
-      // Create new amendment section and add to table
-      const newSectionNumber = sectionNumber + 1
-      const sectList = {
-        sectionNumber: newSectionNumber,
-        sectionType: SectionType.amendment,
-        sectionHeader: "Amendment",
-        sectionMembers: [],
-        isCollapsed: false
-      }
-      table2.push(sectList)
-      // Add to database
-      if (currentEventId !== null) {
-        await addDebateSection(currentEventId,currentDebateNumber,newSectionNumber,"Amendment")
-      }
-      else { console.warn("currentEventId is null!")}
-
-      // Reset Remaining table with all other members
-      const currentSpkrId = lastMember.member.id
-      table0 = []
-      const members = await getMembersForGroupId(currentGroupId)
-      for (let i = 0; i < members.length; ++i) {
-        if (members[i].id != currentSpkrId) {
-          const member: Member = await getMemberWithId(members[i].id)
-          // const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
-          table0.push(member)
+    amendBtn.addEventListener('click', () => {
+      void (async () => {
+        // Create new amendment section and add to table
+        const newSectionNumber = sectionNumber + 1
+        const sectList = {
+          sectionNumber: newSectionNumber,
+          sectionType: SectionType.amendment,
+          sectionHeader: "Amendment",
+          sectionMembers: [],
+          isCollapsed: false
         }
-      }
-      table1 = []
+        table2.push(sectList)
+        // Add to database
+        if (currentEventId !== null) {
+          await addDebateSection(currentEventId,currentDebateNumber,newSectionNumber,"Amendment")
+        }
+        else { console.warn("currentEventId is null!")}
 
-      await populateTables()
-      document.dispatchEvent(new CustomEvent('section-change', {
-        bubbles: true,
-        cancelable: false,
-        detail: { }
-      }))
+        // Reset Remaining table with all other members
+        const currentSpkrId = lastMember.member.id
+        table0 = []
+        const members: Member[] = await getMembersForGroupId(currentGroupId) 
+        for (let i = 0; i < members.length; ++i) {
+          if (members[i].id != currentSpkrId) {
+            const member: Member = await getMemberWithId(members[i].id) 
+            table0.push(member)
+          }
+        }
+        table1 = []
+
+        await populateTables()
+        document.dispatchEvent(new CustomEvent('section-change', {
+          bubbles: true,
+          cancelable: false,
+          detail: { }
+        }))
+      })()
     })
   }
 
   // Current speaker in current section of an amendment debate so show final amendment speaker menu 
   else if ((sectionNumber == numSectionsInTable - 1) && 
   (rowNumber == numSpeakersInSection -1) && 
-  (section.sectionType == SectionType.amendment)) {
+  (section.sectionType as SectionType == SectionType.amendment)) {
     const menu = `
     <div class='context-row'><button id='cm-final'>Final speaker for amendment</button></div>
     `
     contextMenu.innerHTML = menu
     const finalBtn = document.getElementById('cm-final')
     if (!finalBtn) {return}
-    finalBtn.addEventListener('click', async () => {
+    finalBtn.addEventListener('click', () => {
+      void (async () => {
+        // Create new main debate section and add to table
+        const sectList = {
+          sectionNumber: sectionNumber + 1,
+          sectionType: SectionType.mainDebate,
+          sectionHeader: "Main debate",
+          sectionMembers: [],
+          isCollapsed: false
+        }
+        table2.push(sectList)
+        if (currentEventId !== null) {
+          await addDebateSection(currentEventId, currentDebateNumber, (sectionNumber + 1), "Main debate")
+        }
+        else { console.warn("currentEventId is null!")}
 
-      // Create new main debate section and add to table
-      const sectList = {
-        sectionNumber: sectionNumber + 1,
-        sectionType: SectionType.mainDebate,
-        sectionHeader: "Main debate",
-        sectionMembers: [],
-        isCollapsed: false
-      }
-      table2.push(sectList)
-      if (currentEventId !== null) {
-        await addDebateSection(currentEventId, currentDebateNumber, (sectionNumber + 1), "Main debate")
-      }
-      else { console.warn("currentEventId is null!")}
-
-      // Reset Remaining table with all other members
-      table0 = []
-      table1 = []
-      // Get all speakers already spoken in main debate
-      const spokenIds: number[] = []
-      for (const sectionList of table2) {
-        if (sectionList.sectionType == SectionType.mainDebate) {
-          for (const mbr of sectionList.sectionMembers) {
-            spokenIds.push(mbr.member.id)
+        // Reset Remaining table with all other members
+        table0 = []
+        table1 = []
+        // Get all speakers already spoken in main debate
+        const spokenIds: number[] = []
+        for (const sectionList of table2) {
+          if (sectionList.sectionType as SectionType === SectionType.mainDebate) {
+            for (const mbr of sectionList.sectionMembers) {
+              spokenIds.push(mbr.member.id)
+            }
           }
         }
-      }
-      // Put all other members into remaining table
-      const memberIds = await getMembersForGroupId(currentGroupId)
-      for (let i = 0; i < memberIds.length; ++i) {
-        if (!spokenIds.includes(memberIds[i].id)) {
-          const member = await getMemberWithId(memberIds[i].id)
-          // const member: Member = {id: memberReturned.Id, title: memberReturned.Title, firstName: memberReturned.FirstName, lastName: memberReturned.LastName}
-          table0.push(member)
+        // Put all other members into remaining table
+        const members: Member[] = await getMembersForGroupId(currentGroupId) 
+        for (let i = 0; i < members.length; ++i) {
+          if (!spokenIds.includes(members[i].id)) {
+            const member: Member = await getMemberWithId(members[i].id) 
+            table0.push(member)
+          }
         }
-      }
-      await populateTables()
-      document.dispatchEvent(new CustomEvent('section-change', {
-        bubbles: true,
-        cancelable: false,
-        detail: { }
-      }))
+        await populateTables()
+        document.dispatchEvent(new CustomEvent('section-change', {
+          bubbles: true,
+          cancelable: false,
+          detail: { }
+        }))
+      })()
     })
   }
 
@@ -471,7 +480,11 @@ function populateContextMenu(sectionNumber: number, rowNumber: number) {
     contextMenu.innerHTML = menu
     const againBtn = document.getElementById('cm-again') as HTMLButtonElement
     const mbrClicked = section.sectionMembers[rowNumber]
-    againBtn.addEventListener('click',handleContextMenuSpeakAgain.bind(null,mbrClicked,numSectionsInTable))
+    againBtn.addEventListener('click', () => {
+      void (async () => {
+        await handleContextMenuSpeakAgain(mbrClicked, numSectionsInTable)
+      })()
+    })
   }
 }
 
@@ -533,8 +546,8 @@ async function updateListMember(section: number, row: number, target: string, se
       const eventEl = document.getElementById('mtgsetup-select-event') as HTMLSelectElement
       if (!eventEl) { return} 
       const eventIdx = eventEl.options.selectedIndex
-      const evt = await getOpenEventAtIdx(eventIdx)
-      setCurrentEventId(evt.Id)
+      const evt: GroupEvent = await getOpenEventAtIdx(eventIdx) 
+      await setCurrentEventId(evt.Id)
       const debateNum = currentDebateNumber
       setCurrentDebateNumber(debateNum)
       

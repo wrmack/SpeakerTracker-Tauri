@@ -18,15 +18,18 @@ const displayMembers = `
 const setupDropdownListeners = function () {
   const el = document.getElementById('mbrs-select-entities') as HTMLSelectElement
   if (el) {
-    // el.addEventListener('click', handleDropDownEvent)
-    el.addEventListener('change', handleDropDownEvent)
+    el.addEventListener('change', () => {
+      void (async () => {
+        await handleDropDownEvent.call(el)
+      })()
+    })
   }
 }
 
-function handleDropDownEvent(this: HTMLElement) {
+async function handleDropDownEvent(this: HTMLElement) {
   initialiseMemberDetail()
   const el = this as HTMLSelectElement
-  entityChanged(el.selectedIndex)
+  await entityChanged(el.selectedIndex)
 }
 
 export { displayMembers, setupDropdownListeners }

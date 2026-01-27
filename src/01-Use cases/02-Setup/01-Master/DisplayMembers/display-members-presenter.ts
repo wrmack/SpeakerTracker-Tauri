@@ -33,12 +33,12 @@ async function loadMembers () {
   //   if (grpBtn != null) {grpBtn.disabled = false}
   // }
   let tableRows = ''
-  for (const i in members) {
-    const myId = 'mr-r' + i
+  members.forEach( (member, i) => {
+    const myId = 'mr-r' + i.toString()
     tableRows += '<tr>'
-    tableRows += "<td><button class='mbr-cell-text master-cell-btn' id=" + myId + ' >' + members[i].firstName + ' ' + members[i].lastName + '</button> </td>'
+    tableRows += "<td><button class='mbr-cell-text master-cell-btn' id=" + myId + ' >' + member.firstName + ' ' + member.lastName + '</button> </td>'
     tableRows += '</tr>'
-  }
+  })
   const memcont = document.getElementById('master-members-content')
   if (!memcont) {return}
   memcont.innerHTML = tableRows
@@ -78,8 +78,8 @@ function handleSelection(this: HTMLElement)  {
 async function entityChanged(idx: number) {
   const ents = await getEntities()
   const ent = ents[idx]
-  setCurrentEntityId(ent.Id)
-  loadMembers()
+  await setCurrentEntityId(ent.Id)
+  await loadMembers()
 }
 
 export { loadEntitiesDropdownForMembers, loadMembers, entityChanged }

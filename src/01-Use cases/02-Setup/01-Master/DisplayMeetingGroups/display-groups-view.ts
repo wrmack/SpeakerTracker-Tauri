@@ -18,14 +18,18 @@ const displayGroups = `
 const setupGroupsEntitiesDropdownListeners = function () {
   const el = document.getElementById('groups-select-entities') as HTMLSelectElement
   if (el) {
-    el.addEventListener('change', handleDropDownEvent)
+    el.addEventListener('change', () => {
+      void (async () => {
+        await handleDropDownEvent.call(el)
+      })()
+    })
   }
 }
 
-function handleDropDownEvent(this: HTMLElement) {
+async function handleDropDownEvent(this: HTMLElement) {
   initialiseGroupDetail()
   const el = this as HTMLSelectElement
-  entityChanged(el.selectedIndex)
+  await entityChanged(el.selectedIndex)
 }
 
 export { displayGroups, setupGroupsEntitiesDropdownListeners }

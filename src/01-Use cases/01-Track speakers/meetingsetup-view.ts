@@ -184,31 +184,45 @@ const loadSetupMeetingSheet = async () => {
   // Select entity - event listener
   const ent = document.getElementById('mtgsetup-select-entity') as HTMLSelectElement
   if (ent) {  
-    ent.addEventListener('change', handleChangedEntitySelection)
+    ent.addEventListener('change', () => {
+      void (async () => {
+        await handleChangedEntitySelection.call(ent)
+      })()
+    })
   }
  
   // Set individual timer switch - event listener
   const timer = document.getElementById('timer_type') as HTMLInputElement
   if (timer) {  
-    timer.addEventListener('change', handleChangedTimerType)
+    timer.addEventListener('change', () => {
+        handleChangedTimerType.call(timer)  
+    })
   }
 
   // Record event switch - event listener
   const record = document.getElementById('create_record') as HTMLInputElement
   if (record) {
-    record.addEventListener('change', handleChangedRecordEvent)
+    record.addEventListener('change', () => {
+        handleChangedRecordEvent.call(record)
+    })
   }
 
   // Choose event - event listener
   const eventDate = document.getElementById('mtgsetup-select-event') as HTMLSelectElement
   if (eventDate) {
-    eventDate.addEventListener('change', handleChangedEventDate)
+    eventDate.addEventListener('change', () => {
+        handleChangedEventDate.call(eventDate)
+    })
   }
 
   // Done button listener
   const doneBtn = document.getElementById('mtgsetup-done-btn')
   if (!doneBtn) {return}
-  doneBtn.addEventListener('click', handleMeetingSetupDoneButtonClick)
+  doneBtn.addEventListener('click', () => { 
+    void (async () => {
+      await handleMeetingSetupDoneButtonClick.call(doneBtn)
+    })()
+  })  
 }
 
 
@@ -244,12 +258,12 @@ async function handleMeetingSetupDoneButtonClick(this: HTMLElement) {
     sidebarRecordCircle.style["display"] = "none"
   }
 
-  let evtIdx = (meetingIsBeingRecorded) ? elEvtSelect.selectedIndex : null
+  const evtIdx = (meetingIsBeingRecorded) ? elEvtSelect.selectedIndex : null
   await updateDataForNewMeeting(entIdx,grpIdx,evtIdx,meetingIsBeingRecorded)
   await resetAfterMeetingSetupDoneClicked(evtIdx)
 
   mtgSht.style.left = isSetupSheetExpanded ? '-300px' : '0px'
-  if (!isSetupSheetExpanded) { populateEntityDropdown() }
+  if (!isSetupSheetExpanded) { await populateEntityDropdown() }
   setIsSetupSheetExpanded(!isSetupSheetExpanded)
 }
 
@@ -257,7 +271,11 @@ function handleMtgshtInfoBtnClick(this: HTMLButtonElement) {
     const mtgshtInfo = document.getElementById('mtgsetup-info-display') as HTMLDivElement
     if (mtgshtInfo) {
         const vis = window.getComputedStyle(mtgshtInfo).visibility;  // Note that because next line starts with brackets it is necessary to use a semi-colon
-        (vis == 'hidden') ? mtgshtInfo.style.visibility = 'visible' : mtgshtInfo.style.visibility = 'hidden'
+        if (vis == 'hidden') {
+            mtgshtInfo.style.visibility = 'visible';
+        } else {
+            mtgshtInfo.style.visibility = 'hidden';
+        }
     }
 }
 
@@ -272,7 +290,11 @@ function handleMtgshtInfoTimerBtnClick(this: HTMLButtonElement) {
     const mtgshtInfoTimer = document.getElementById('mtgsetup-info-timer-display') as HTMLDivElement
     if (mtgshtInfoTimer) {
         const vis = window.getComputedStyle(mtgshtInfoTimer).visibility;
-        (vis == 'hidden') ? mtgshtInfoTimer.style.visibility = 'visible' : mtgshtInfoTimer.style.visibility = 'hidden'
+        if (vis == 'hidden') {
+            mtgshtInfoTimer.style.visibility = 'visible';
+        } else {
+            mtgshtInfoTimer.style.visibility = 'hidden';
+        }
     }
 }
 
@@ -287,7 +309,11 @@ function handleMtgshtInfoRecordBtnClick(this: HTMLButtonElement) {
     const mtgshtInfoRecord = document.getElementById('mtgsetup-info-record-display') as HTMLDivElement
     if (mtgshtInfoRecord) {
         const vis = window.getComputedStyle(mtgshtInfoRecord).visibility;
-        (vis == 'hidden') ? mtgshtInfoRecord.style.visibility = 'visible' : mtgshtInfoRecord.style.visibility = 'hidden'
+        if (vis == 'hidden') {
+            mtgshtInfoRecord.style.visibility = 'visible';
+        } else {
+            mtgshtInfoRecord.style.visibility = 'hidden';
+        }
     }
 }
 
@@ -312,7 +338,7 @@ async function handleChangedEntitySelection(this: HTMLSelectElement) {
     if (evt) {evt.innerHTML = evtOptions}
 }
   
-async function handleChangedTimerType(this: HTMLInputElement) {
+function handleChangedTimerType(this: HTMLInputElement) {
     const rec = document.getElementById('create_record') as HTMLInputElement
     if (this.checked) {
         rec.disabled = false
@@ -324,7 +350,7 @@ async function handleChangedTimerType(this: HTMLInputElement) {
     }
 }
   
-async function handleChangedRecordEvent(this: HTMLInputElement) {
+function handleChangedRecordEvent(this: HTMLInputElement) {
   const event = document.getElementById('mtgsetup-event-dropdown-container') as HTMLDivElement
   if (this.checked) {
       event.style.visibility = 'visible'
@@ -355,8 +381,8 @@ async function handleChangedRecordEvent(this: HTMLInputElement) {
   }
 }
 
-async function handleChangedEventDate(this: HTMLSelectElement) {
-    await eventDateChanged(this.selectedIndex)
+function handleChangedEventDate(this: HTMLSelectElement) {
+    eventDateChanged(this.selectedIndex)
 }
 
 export {

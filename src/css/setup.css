@@ -138,6 +138,7 @@ div#setup-content-container {
   display: flex;
   align-items: center;
   justify-content: flex-start;
+  text-align: left;
 }
 
 .master-cell-btn-selected {

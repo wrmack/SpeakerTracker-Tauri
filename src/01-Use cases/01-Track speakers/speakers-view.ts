@@ -33,9 +33,11 @@ import { getOpenEventAtIdx } from '../../02-Models/models.js'
 import { formatIsoDate, getTimeStringFromSeconds } from '../../04-Utils/utils.js'
 import { loadSetupMeetingSheet } from './meetingsetup-view.js'
 // import { isSet } from 'util/types'
+import { GroupEvent } from '../../types/interfaces.js'
+// import { call } from "assert/strict";
 
 let totalSeconds = 0
-let timer: number
+let timer: NodeJS.Timeout | undefined
 let isTimerOn = false
 let isPaused = false
 let isDragging = false
@@ -51,12 +53,13 @@ const speaker_tracker = `
   <div id="display-area">
     <div>
       <p id="committee-name"></p>
+      <div id="meeting-event"></div>
     </div>
     <div id="clock-display" >
       00:00
     </div>
   </div>
-  <div id="meeting-event"></div>
+
   <div id="controls">
     <button id="btn-play">
       <span class="icon-play">a</span>
@@ -178,7 +181,7 @@ const resetAfterMeetingSetupDoneClicked = async (evtIdx: number | null) => {
   }
   if (evtIdx !== null) {
     const mtgEvent = document.getElementById('meeting-event') as HTMLDivElement
-    const evt = await getOpenEventAtIdx(evtIdx)
+    const evt: GroupEvent = await getOpenEventAtIdx(evtIdx) 
     const evtDate = formatIsoDate(evt.EventDate)
     mtgEvent.innerHTML = evtDate
     mtgEvent.style.display = 'block'
@@ -194,15 +197,23 @@ const resetAfterMeetingSetupDoneClicked = async (evtIdx: number | null) => {
  */
 const setupArrowButtonListeners =  () => {
   const buttnsR = document.querySelectorAll('.arrow-button-r')
-  buttnsR.forEach(el => el.addEventListener('click', handleRightArrowClick ))
+  buttnsR.forEach(el => el.addEventListener('click', () => {
+    void (async () => 
+      await handleRightArrowClick.call(el as HTMLElement) 
+    )()
+  }))
 
   const buttnsL = document.querySelectorAll('.arrow-button-l')
-  buttnsL.forEach(el => el.addEventListener('click', handleLeftArrowClick ))
+  buttnsL.forEach(el => el.addEventListener('click', () => {
+    void (async () =>
+      await handleLeftArrowClick.call(el as HTMLElement)
+    )()
+  }))
 }
 
 const setupWaitingTableMenuListener = () => {
   const menBtn = document.getElementById('icon-menu') as HTMLButtonElement
-  menBtn.addEventListener('click', handleMenuClick)
+  menBtn.addEventListener('click', () => { void (async () => await handleMenuClick())() })
 }
 
 /** 
@@ -233,14 +244,22 @@ const setupSpeakingTableSectionChangeListener = () => {
 const setupMeetingSetupListeners = () => {
   const meetingSetupBtn = document.getElementById('sidebar-meeting-setup-btn')
   if (!meetingSetupBtn) {return}
-  meetingSetupBtn.addEventListener('click', handleMeetingSetupButtonClick)
+  meetingSetupBtn.addEventListener('click', () => { 
+    void (async () => { 
+      await handleMeetingSetupButtonClick() 
+    })() 
+  })
 }
 
 const setupClockExpandListener = () => {
   const exp = document.getElementById('sidebar-clock-btn')
   exp?.addEventListener('click', handleClockExpand)
   const modClk = document.getElementById('sidebar-modal-clock-btn')
-  modClk?.addEventListener('click', handleClockNewWindow)
+  modClk?.addEventListener('click', () => {
+    void (async () => {
+      await handleClockNewWindow()
+    })()
+  })
 }
 
 
@@ -250,19 +269,33 @@ const setupClockExpandListener = () => {
 const setupResetListener = () => {
   const rst = document.getElementById('sidebar-reset-btn')
   if (!rst) {return}
-  rst.addEventListener('click', handleResetButtonClick)
+  rst.addEventListener('click', () => {
+    void (async () => {
+      await handleResetButtonClick.call(rst)
+    })()
+  })    
 }
 
 const setupMeetingEventListeners = () => {
   const debateEnd = document.getElementById('sidebar-savedebate-btn') as HTMLButtonElement
-  debateEnd.addEventListener('click', async () => {
-    await updateDataAfterSaveDebate()
-    await resetAll()
+  debateEnd.addEventListener('click', () => {
+    void (async () => {
+      await updateDataAfterSaveDebate()
+      await resetAll()
+    })()
   })
   const meetingEnd = document.getElementById('sidebar-endmeeting-btn')
-  meetingEnd?.addEventListener('click', handleEndMeetingButtonClick)
+  meetingEnd?.addEventListener('click', () => { 
+    void (async () => { 
+      await handleEndMeetingButtonClick.call(meetingEnd)
+    })()
+  })
   const meetingCancel = document.getElementById('sidebar-record-cancel-btn')
-  meetingCancel?.addEventListener('click', handleCancelMeetingButtonClick)
+  meetingCancel?.addEventListener('click', () => {  
+    void (async () => { 
+      await handleCancelMeetingButtonClick.call(meetingCancel)
+    })()
+  })    
 }
 
 /** 
@@ -270,7 +303,7 @@ const setupMeetingEventListeners = () => {
  */
 const setupInfoListener = () => {
   const info = document.getElementById('sidebar-info-btn') 
-  info?.addEventListener('click', handleInfoButtonClick)
+  info?.addEventListener('click', () => { void (async () => await handleInfoButtonClick())() })
 }
 
 /**
@@ -278,13 +311,25 @@ const setupInfoListener = () => {
  */
 const setupTimerControlListeners = async () => {
   const playbtn = document.getElementById('btn-play') as HTMLElement
-  playbtn.addEventListener('click', handlePlayClicked)
+  playbtn.addEventListener('click',  (ev) => {
+    void (async () => {
+      await handlePlayClicked.call(playbtn, ev)
+    })()
+  })    
   
   const pausebtn = document.getElementById('btn-pause') as HTMLElement
-  pausebtn.addEventListener('click', handlePauseClicked)
-  
+  pausebtn.addEventListener('click', (ev) => {
+    void (async () => {
+      await handlePauseClicked.call(pausebtn, ev)
+    })()
+  })
   const stopbtn = document.getElementById('btn-stop') as HTMLElement
-  stopbtn.addEventListener('click', handleStopClicked)
+  stopbtn.addEventListener('click', (ev) => {
+    void (async () => {
+      await handleStopClicked.call(stopbtn, ev)
+    })()
+  })
+    
   
   // If setting up speakers-view coming back from setup,
   // restore the timer display.  Calling myTimer() increases
@@ -294,7 +339,7 @@ const setupTimerControlListeners = async () => {
     myTimer()
   } 
 
-  await listen<String>("modal-timer-btn", (ev) => {
+  await listen<string>("modal-timer-btn", (ev) => {
     const playbtn = document.getElementById('btn-play') as HTMLButtonElement
     const pausebtn = document.getElementById('btn-pause') as HTMLButtonElement
     const stopbtn = document.getElementById('btn-stop') as HTMLButtonElement
@@ -331,13 +376,29 @@ const setupTimerControlListeners = async () => {
  */
 const setupSpeakingTableTimerListeners = () => {
   const playbtns = document.querySelectorAll('.spkg-table-cell-timer-play')
-  playbtns.forEach(el => el.addEventListener('click', handlePlayClicked))
+  playbtns.forEach(el => el.addEventListener('click', (ev) => {
+    void (async () => {
+      await handlePlayClicked.call(el as HTMLElement, ev)
+    })()
+  }))
   const play2btns = document.querySelectorAll('.spkg-table-cell-timer-play2')
-  play2btns.forEach(el => el.addEventListener('click', handlePlayClicked))
+  play2btns.forEach(el => el.addEventListener('click', (ev) => {
+    void (async () => {
+      await handlePlayClicked.call(el as HTMLElement, ev)
+    })()
+  }))
   const stopbtns = document.querySelectorAll('.spkg-table-cell-timer-stop')
-  stopbtns.forEach(el => el.addEventListener('click', handleStopClicked))
+  stopbtns.forEach(el => el.addEventListener('click', (ev) => {
+    void (async () => {
+      await handleStopClicked.call(el as HTMLElement, ev)
+    })()
+  }))
   const pausebtns = document.querySelectorAll('.spkg-table-cell-timer-pause')
-  pausebtns.forEach(el => el.addEventListener('click', handlePauseClicked))
+  pausebtns.forEach(el => el.addEventListener('click', (ev) => {
+    void (async () => {
+      await handlePauseClicked.call(el as HTMLElement, ev)
+    })()
+  }))
 }
 
 //
@@ -491,10 +552,10 @@ function handleSpeakingTableSectionChange(this: HTMLElement) {
 }
 
 // Display the meeting setup sheet and populate dropdowns
-async function handleMeetingSetupButtonClick(this: HTMLElement) {
+async function handleMeetingSetupButtonClick() {
   const expanded = isSetupSheetExpanded ? false : true
   setIsSetupSheetExpanded(expanded)
-  loadSetupMeetingSheet()
+  await loadSetupMeetingSheet()
 }
 
 async function handleEndMeetingButtonClick(this: HTMLElement) {
@@ -549,7 +610,7 @@ async function handleResetButtonClick(this: HTMLElement) {
   await resetAll()
 }
 
-function handleInfoButtonClick () {
+async function handleInfoButtonClick () {
 
   const helpWin = new WebviewWindow("info", {
     url: "./info.html",
@@ -560,12 +621,14 @@ function handleInfoButtonClick () {
     minimizable: false
   });
 
-  helpWin.once("tauri://created", async () => {
-    await helpWin.show();
-    await helpWin.setFocus();
-  });
+  await helpWin.once("tauri://created", () => {
+    void (async () => {
+      await helpWin.show()
+      await helpWin.setFocus()
+    })()
+  })
 
-  helpWin.once("tauri://error", (e) => {
+  await helpWin.once("tauri://error", (e) => {
     console.error("Failed to create help window", e);
   });
 }
@@ -854,7 +917,7 @@ async function handleClockNewWindow() {
   //   clockWindow = null
   // }
   if (clockWin) {
-    clockWin.close()
+    await clockWin.close()
     clockWin = null
   } 
   // const clockWinIsVisible = await clockWin.isVisible()
@@ -873,14 +936,19 @@ async function handleClockNewWindow() {
     minimizable: false
   });
 
-  clockWin.once("tauri://created", async () => {
-    if (clockWin){
-      await clockWin.show();
-      await clockWin.setFocus();
-    }
+  await clockWin.once("tauri://created", () => {
+    void (async () => {
+      await clockWin?.show()
+      await clockWin?.setFocus()
+
+      if (clockWin){
+        await clockWin.show();
+        await clockWin.setFocus();
+      }
+    })();
   });
 
-  clockWin.once("tauri://error", (e) => {
+  await clockWin.once("tauri://error", (e) => {
     console.error("Failed to create help window", e);
   });
   //   if (clockWindow) {
@@ -944,10 +1012,12 @@ function handleNoteClicked() {
     const textArea = childWindow.document.getElementById('debate-note')
     textArea?.focus()
     saveBtn.addEventListener('click', () => {
+      void (async () => {
       const txtArea = childWindow.document.getElementById('debate-note') as HTMLTextAreaElement
       const note = txtArea.value
-      setNoteForCurrentDebate(note)
+      await setNoteForCurrentDebate(note)
       childWindow.close()
+      })()
     })
   }
 }
@@ -973,8 +1043,8 @@ function startTimer () {
   else {
     isPaused = false
   }
-  
-  timer = setInterval(myTimer as TimerHandler, 1000)
+
+  timer = setInterval(myTimer, 1000)
   isTimerOn = true
 }
 
@@ -984,7 +1054,7 @@ function stopTimer () {
   isPaused = false
 }
 
-async function myTimer () {
+function myTimer () {
   // Increase totalSeconds
   ++totalSeconds
   // Format seconds into minutes and seconds strings
@@ -1007,8 +1077,12 @@ async function myTimer () {
   //   const largeClkWinDiv = clockWindow.document.getElementById('modal-clock-display') 
   //   if (largeClkWinDiv) {largeClkWinDiv.innerHTML = timerStrg }
   // }
-  await emit('timer-event', {data:timerStrg});
-  updateTimeForListMember(totalSeconds)
+  // await emit('timer-event', {data:timerStrg});
+  // updateTimeForListMember(totalSeconds)
+  void (async () => {
+    await emit('timer-event', { data: timerStrg });
+    updateTimeForListMember(totalSeconds);
+  })();
 }
 
 export { 

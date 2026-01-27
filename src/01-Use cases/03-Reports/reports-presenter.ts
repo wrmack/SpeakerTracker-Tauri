@@ -15,6 +15,7 @@ import {
   getDebateSectionSpeeches,  
   getGroupForId
 } from '../../02-Models/models.js'
+import { ReportEventViewModel, Debate, DebateViewModel, DebateSectionViewModel, DebateSpeechViewModel, DebateSpeech } from '../../types/interfaces.js'
 
 
 
@@ -44,12 +45,12 @@ async function loadEntitiesDropdownForGroups () {
 async function loadGroups () {
   const groups = await getGroupsForCurrentEntity()
   let tableRows = ''
-  for (const i in groups) {
+  groups.forEach( (group, i) => {
     const myId = 'gp-r' + i
     tableRows += '<tr>'
-    tableRows += "<td><button class='group-cell-text master-cell-btn' id=" + myId + ' >' + groups[i].GrpName + '</button> </td>'
+    tableRows += "<td><button class='group-cell-text master-cell-btn' id=" + myId + ' >' + group.GrpName + '</button> </td>'
     tableRows += '</tr>'
-  }
+  })
   const cont = document.getElementById('master-report-groups-content')
   if (!cont) { return}
   cont.innerHTML = tableRows
@@ -89,8 +90,8 @@ function handleSelection(this: HTMLElement)  {
 async function entityChanged(idx: number) {
   const ents = await getEntities()
   const ent = ents[idx]
-  setCurrentEntityId(ent.Id)
-  loadGroups()
+  await setCurrentEntityId(ent.Id)
+  await loadGroups()
 }
 
 /** ---------------  Detail  ------------------- */
@@ -98,14 +99,14 @@ async function entityChanged(idx: number) {
 const getReportsForGroupAtIdx = async (idx: number) => {
   // Get the group
   const group = await getGroupAtIdx(idx) 
-  setCurrentGroupId(group.Id)
+  await setCurrentGroupId(group.Id)
 
   // Get the events for the group
   // Each Event has Event.ID, GroupID, EventDate
   const events = await getClosedEventsForCurrentGroup()
 
   // Build the view model
-  let reportEvents: ReportEventViewModel[] = []
+  const reportEvents: ReportEventViewModel[] = []
 
   events.forEach((event) => {
     const reportEvent: ReportEventViewModel = {
@@ -129,7 +130,7 @@ const getReportsForCurrentGroup = async () => {
   if (!group) {return}
 
   // Build the view model
-  let reportEvents: ReportEventViewModel[] = []
+  const reportEvents: ReportEventViewModel[] = []
 
   events.forEach((event) => {
     const reportEvent: ReportEventViewModel = {
@@ -147,18 +148,18 @@ const getReportsForCurrentGroup = async () => {
 // Refer to interfaces.d.ts for view models
 const getReportDetailsForEventId = async (eventId: number) => {
   // Get the debates
-  let debatesForReport: DebateViewModel[] = []
+  const debatesForReport: DebateViewModel[] = []
   const debates = await getDebatesForEventId(eventId) as Debate[]
 
   // Get the sections in each debate
   for (const debate of debates) {
     const debateSections = await getDebateSections(debate.EventId, debate.DebateNumber) 
-    let sectionsForDebate: DebateSectionViewModel[] = []
+    const sectionsForDebate: DebateSectionViewModel[] = []
 
     for (const section of debateSections) {
       const sectionName = section.SectionName
       const speeches = await getDebateSectionSpeeches(debate.EventId, debate.DebateNumber, section.SectionNumber) as DebateSpeech[]
-      let speechesArray: DebateSpeechViewModel[] = []
+      const speechesArray: DebateSpeechViewModel[] = []
 
       for (const speech of speeches) {
         const member = await getMemberWithId(speech.MemberId)
@@ -210,10 +211,12 @@ const getReportDetailsForEventId = async (eventId: number) => {
   return reportDetails
 } 
 
-async function deleteReportsForEventIds(eventIds: number[] ) {
-  for await (const eventId of eventIds) {
-    deleteEvent(eventId)
-  }
+function deleteReportsForEventIds(eventIds: number[] ) {
+  eventIds.forEach( (eventId) =>  {
+    void (async () => { 
+      await deleteEvent(eventId)
+    })()  
+  })
 }
 
 export{

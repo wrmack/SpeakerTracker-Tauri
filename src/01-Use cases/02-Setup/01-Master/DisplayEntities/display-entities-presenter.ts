@@ -8,15 +8,15 @@ async function loadEntities () {
   const entities = await getEntities()
   const numEntities = entities.length
   let tableRows = ''
-  for (const i in entities) {
-    const myId = 'en-r' + i
+  entities.forEach( (entity, i) => {
+    const myId = 'en-r' + i.toString()
     tableRows += '<tr>'
-    tableRows += `<td><button class='ent-cell-btn master-cell-btn' id='${myId}' > ${entities[i].EntName}</button> </td>`
+    tableRows += `<td><button class='ent-cell-btn master-cell-btn' id='${myId}' > ${entity.EntName}</button> </td>`
     tableRows += '</tr>'
-  }
-  const cntnt = document.getElementById('master-entities-content');
+  })
+  const cntnt = document.getElementById('master-entities-content')
   if (!cntnt) { return }
-  cntnt.innerHTML = tableRows;
+  cntnt.innerHTML = tableRows
 
   // Create custom event.  Bubble up and add event listener to document
   // in display-selected-entity-view.  Pass the id attribute of the element clicked.

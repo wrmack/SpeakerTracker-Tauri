@@ -22,7 +22,7 @@ Speakers view
 #display-area {
   display: flex;
   min-width: 500px;
-  width: 40%;
+  width: 50%;
   max-width: 800px;
   height: 150px;
   margin-top: 20px;
@@ -41,14 +41,15 @@ Speakers view
     font-size: 16pt;
     font-weight:400;
     float:left;
+    width:100%;
 }
 
 #meeting-event {
   display: none;
-  position: absolute;
+  /* position: absolute; */
   color: white;
-  left: 50px;
-  top: 200px;
+  /* left: 50px; */
+  /* top: 200px; */
   font-size: 10pt;
 }
 

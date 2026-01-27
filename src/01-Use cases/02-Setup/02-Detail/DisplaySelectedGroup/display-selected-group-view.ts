@@ -1,5 +1,6 @@
 import { getGroupAtIdx, getMembersForGroupId } from '../../../../02-Models/models.js'
 import { setMasterRowIdx } from '../../../../03-State/state.js'
+import { Member } from '../../../../types/interfaces.js'
 
 const displaySelectedGroup = `
   <div id='selected-group'>
@@ -17,12 +18,17 @@ const initialiseGroupDetail = function () {
 }
 
 const setupGroupDetailListeners = function () {
-  document.addEventListener('group-selected', handleGroupSelected)
+  document.addEventListener('group-selected', (event) => {
+    void (async () => { 
+      await handleGroupSelected(event)
+    })()
+  })
 }
 
 async function handleGroupSelected (ev: Event) {
   if (ev instanceof CustomEvent) {
-    const rowStrg = ev.detail.id.slice(4)
+    const detail = ev.detail as { id: string }
+    const rowStrg = detail.id.slice(4)
     const rowNumber = parseInt(rowStrg)
     const group = await getGroupAtIdx(rowNumber)
     const groupMembers: Member[] = await getMembersForGroupId(group.Id)

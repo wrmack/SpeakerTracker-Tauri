@@ -20,7 +20,7 @@ const addEventView = `
 
 `
 
-const loadAddEventSheet = async function () {
+const loadAddEventSheet = function () {
     const edSht = document.getElementById('editing-sheet')
     if (!edSht) {return}
     edSht.innerHTML = addEventView

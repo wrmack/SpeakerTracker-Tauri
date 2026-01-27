@@ -1,8 +1,25 @@
 /**
+ * Custom events
+ */
+export interface EntitySelectedDetail {
+  id: string;
+}
+
+
+/**
  * 
  * Models for managing data for speaking table - they do not mirror database
  * 
  */
+
+/**
+ * Table state
+ */
+export interface TableState {
+  table0: {id: number, title: string, firstName: string, lastName: string}[], 
+  table1: {id: number, title: string, firstName: string, lastName: string}[],
+  table2: {sectionNumber: number, sectionType: number, sectionHeader: string, sectionMembers: ListMember[], isCollapsed: boolean}[]
+}
 
 /**
  * Enum: play=0, pause_stop=1,play_stop=2,off=3 
@@ -17,7 +34,7 @@ declare enum TimerButtonMode {
 /**
  * Enum: mainDebate=0, amendment=1,off=2 
  */
-declare enum SectionType {
+export declare enum SectionType {
     mainDebate = 0,
     amendment = 1,
     off = 2
@@ -27,7 +44,7 @@ declare enum SectionType {
  * A member of a SectionList.
  * 
  */
-interface ListMember {
+export interface ListMember {
     row: number;
     member: Member;
     startTime: Date | null;
@@ -36,7 +53,7 @@ interface ListMember {
     timerIsActive: boolean;
 }
 
-interface SectionList {
+export interface SectionList {
     sectionNumber: number;
     sectionType: SectionType;
     sectionHeader: string;
@@ -44,7 +61,7 @@ interface SectionList {
     isCollapsed: boolean;
 }
 
-interface SpeakingTable {
+export interface SpeakingTable {
     id: number;
     sectionLists: SectionList[];
 }
@@ -57,21 +74,21 @@ interface SpeakingTable {
  */
 
 // Property labels uppercase consistent with database field names
-interface Entity {
+export interface Entity {
     Id: number,
     EntName: string
   }
 
 // Property labels lowercase - legacy so cannot change this witout affecting users who have already installed the app
 // Database Members table has uppercase field names. For example, Member.firstName maps to FirstName in database Member table.
-interface Member {
+export interface Member {
   id: number,
   title: string,
   firstName: string,
   lastName: string
 }
 
-interface Group {
+export interface Group {
   Id: number,
   GrpName: string,
   Entity: number
@@ -86,21 +103,21 @@ interface Group {
 
 
 // Use GroupEvent to avoid clash with in-built Event
-interface GroupEvent {
+export interface GroupEvent {
   Id: number,
   GroupId: number,
   EventDate: string,
   Closed: boolean
 }
 
-interface Debate {
+export interface Debate {
   Id: number,
   EventId: number,
   DebateNumber: number,
   Note: string
 }
 
-interface DebateSection {
+export interface DebateSection {
   Id: number,
   EventId: number,
   DebateNumber: number,
@@ -108,7 +125,7 @@ interface DebateSection {
   SectionName: string
 }
 
-interface DebateSpeech {
+export interface DebateSpeech {
   Id: number,
   DebateNumber: number,
   SectionNumber: number,
@@ -126,7 +143,7 @@ interface DebateSpeech {
  */
 
 // For displaying report cards in detail view
-interface ReportEventViewModel {
+export interface ReportEventViewModel {
   EventId: number,
   GroupName: string,
   Date: string
@@ -135,7 +152,7 @@ interface ReportEventViewModel {
 // Following are for displaying the details of the clicked report card
 
 // At the top level - the report requires the meeting group name, the date and the array of debates
-interface ReportDetailsViewModel {
+export interface ReportDetailsViewModel {
   MeetingGroupName: string,
   Date: string,
   Debates: DebateViewModel[],
@@ -146,7 +163,7 @@ interface ReportDetailsViewModel {
  * @property {string} DebateNote
  * @property {DebateSectionViewModel[]} DebateSections
  *  */ 
-interface DebateViewModel {
+export interface DebateViewModel {
   DebateNote: string,
   DebateSections: DebateSectionViewModel[]
 }
@@ -156,7 +173,7 @@ interface DebateViewModel {
  * @property {string} SectionName
  * @property {DebateSpeechViewModel[]} DebateSpeeches
  *  */ 
-interface DebateSectionViewModel {
+export interface DebateSectionViewModel {
   SectionName: string,
   DebateSpeeches: DebateSpeechViewModel[]
 }
@@ -167,7 +184,7 @@ interface DebateSectionViewModel {
  * @property {string} StartTime
  * @property {string} SpeakingTime
  *  */ 
-interface DebateSpeechViewModel {
+export interface DebateSpeechViewModel {
   MemberName: string,
   StartTime: string,
   SpeakingTime: string

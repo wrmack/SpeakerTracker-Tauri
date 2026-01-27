@@ -14,6 +14,9 @@ import { jsPDF } from "jspdf";
 import { formatIsoDate } from "../../04-Utils/utils.js"
 // import { report } from "process"
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow"
+// import { Window } from "@tauri-apps/api/window"
+// import { Webview } from "@tauri-apps/api/webview"
+import { DebateViewModel, DebateSectionViewModel, DebateSpeechViewModel, ReportEventViewModel } from "../../types/interfaces.js";
 
 const reportsView = `
 <div id='reports-topbar-container'>
@@ -56,7 +59,11 @@ const setupReports = async () => {
   const edit = document.getElementById('reports-topbar-edit')
   edit?.addEventListener('click', handleEditClicked)
   const trash = document.getElementById('reports-topbar-trash')
-  trash?.addEventListener('click', handleTrashClicked)
+  trash?.addEventListener('click', () => {
+    void (async () => {
+      await handleTrashClicked()
+    })()  
+  })
   const cancel = document.getElementById('reports-topbar-cancel')
   cancel?.addEventListener('click', handleCancelClicked)
 }
@@ -65,25 +72,33 @@ const setupReports = async () => {
 const setupReportsEntitiesDropdownListeners = function () {
   const el = document.getElementById('reports-select-entities') as HTMLSelectElement
   if (el) {
-    el.addEventListener('change', handleDropDownEvent)
-  }
+    el.addEventListener('change', () => {
+      void (async () => {
+        await handleDropDownEvent.call(el)
+      })()
+    })
+  } 
 }
 
-function handleDropDownEvent(this: HTMLElement) {
+async function handleDropDownEvent(this: HTMLElement) {
   const el = this as HTMLSelectElement
-  entityChanged(el.selectedIndex)
+  await entityChanged(el.selectedIndex)
 }
 
 /** ---------------  Detail  ------------------- */
 
-declare global {
-  interface Window {
-    jspdf: any
-  }
-}
+// declare global {
+//   interface Window {
+//     jspdf: any
+//   }
+// }
 
 const setupReportDetailListeners = function () {
-  document.addEventListener('report-group-selected', handleReportGroupSelected )
+  document.addEventListener('report-group-selected', (event) => {
+    void (async () => {
+      await handleReportGroupSelected(event)
+    })()  
+  })
   const pdfviewer = document.getElementById('pdf-viewer')
   if (pdfviewer) {
     pdfviewer.addEventListener('blur', () => {
@@ -96,7 +111,8 @@ const handleReportGroupSelected = async (event: Event) => {
   if (!(event instanceof CustomEvent)) { return }
  
   // Get reports for selected group using row index
-  const rowStrg = event.detail.id.slice(4)
+  const detail = event.detail as { id: string }
+  const rowStrg = detail.id.slice(4)
   const rowNumber = parseInt(rowStrg)
   const reports = await getReportsForGroupAtIdx(rowNumber)
   createCardsFromReportsViewModel(reports)
@@ -105,14 +121,13 @@ const handleReportGroupSelected = async (event: Event) => {
 // Cannot use an arrow function - does not bind to 'this'
 const handleReportCardClick = async function (this: HTMLElement)  {
   // Start spinner
-  const spinner = document.getElementById('loader') as HTMLDivElement
-  spinner.style.display = 'block'
+  // const spinner = document.getElementById('loader') as HTMLDivElement
+  // spinner.style.display = 'block'
   // Get event id of the event relating to the report that was clicked
   const reportId = this.id
   const eventId = parseInt(reportId.slice(6))
   const rptDetails = await getReportDetailsForEventId(eventId)
 
-  // const jsPDF = jspdf.jsPDF
   // Default export is a4 paper, portrait, using millimeters for units (210 x 297 mm)
   const doc: jsPDF = new jsPDF()
   doc.setDisplayMode("50%")
@@ -142,24 +157,24 @@ const handleReportCardClick = async function (this: HTMLElement)  {
 
   let debateNum = 0
 
-  rptDetails.Debates.forEach((item) => {
+  rptDetails.Debates.forEach((item: DebateViewModel) => {
     y += 10
     debateNum += 1
     doc.text(('Debate ' + debateNum.toString()),10,y)
-    const debate = item as DebateViewModel
+    const debate = item
     doc.text(debate.DebateNote,40,y)
     //Sections
     const sections = debate.DebateSections
-    sections.forEach((item) => {
-      const section = item as DebateSectionViewModel
+    sections.forEach((item: DebateSectionViewModel) => {
+      const section = item 
       y += 10
       doc.text(section.SectionName,20,y)
       // Speeches
       const speeches = section.DebateSpeeches
-      speeches.forEach((item) => {
+      speeches.forEach((item: DebateSpeechViewModel) => {
         if (y > 270) { doc.addPage("a4", "portrait"); y = 20;}
         y += 5
-        const speech = item as DebateSpeechViewModel
+        const speech = item
         const fullDate = formatIsoDate(speech.StartTime)
         const start = fullDate.split(" ")[0]
         doc.text(speech.MemberName,30,y)
@@ -173,9 +188,10 @@ const handleReportCardClick = async function (this: HTMLElement)  {
   });
   // doc.output("dataurlnewwindow",{'filename':'Report.pdf'})
   const strg = doc.output("dataurlstring")
-  spinner.style.display = 'none'
+  // spinner.style.display = 'none'
 
-  const reportWin = new WebviewWindow("info", {
+
+  const reportWin = new WebviewWindow(rptDetails.Date.slice(0,16), {
     url: strg,
     title: "Report",
     width: 800,
@@ -184,13 +200,16 @@ const handleReportCardClick = async function (this: HTMLElement)  {
     minimizable: false
   });
 
-  reportWin.once("tauri://created", async () => {
-    await reportWin.show();
-    await reportWin.setFocus();
-  });
+  await reportWin.once("tauri://created", () => {
+    void (async () => {
+      // await reportWin.show()
+      // await reportWin.setFocus()
+      console.log("Report card window created.");
+    })()
+  })
 
-  reportWin.once("tauri://error", (e) => {
-    console.error("Failed to create help window", e);
+  await reportWin.once("tauri://error", (e) => {
+    console.error("Failed to create report card window.", e);
   });
 }
 
@@ -208,14 +227,18 @@ function handleEditClicked(this: HTMLButtonElement) {
   // Remove listeners from cards
   const cards = document.getElementsByClassName('report-card')
   for (const card of cards) {
-    card.removeEventListener('click', handleReportCardClick)
+    card.removeEventListener('click', () => {
+      void (async () => {
+        await handleReportCardClick.call(card as HTMLElement)
+      })()  
+    })
   }
 }
 
 async function handleTrashClicked() {
   // Get event ids of selected cards
   const selectedBoxes = document.querySelectorAll('input[type="checkbox"].report-card-input:checked')
-  let evtIds:number[] = []
+  const evtIds:number[] = []
   for (const box of selectedBoxes) {
     const id = box.parentElement?.parentElement?.id as string
     const evtId = parseInt(id.slice(6))
@@ -224,7 +247,7 @@ async function handleTrashClicked() {
   
   // Delete event from model
   if (evtIds.length > 0) {
-    await deleteReportsForEventIds(evtIds)
+    deleteReportsForEventIds(evtIds)
   }
   
   // Replace Trash and Cancel with Edit by removing inline styles
@@ -257,7 +280,11 @@ function handleCancelClicked() {
   // Add card listeners
   const cards = document.getElementsByClassName('report-card')
   for (const card of cards) {
-    card.addEventListener('click', handleReportCardClick)
+    card.addEventListener('click', () => {
+      void (async () => { 
+        await handleReportCardClick.call(card as HTMLElement)
+      })()  
+    })
   }
 }
 
@@ -298,9 +325,13 @@ const createCardsFromReportsViewModel = (reports: ReportEventViewModel[]) => {
 
   // Add click listeners to each card
   const cards = document.querySelectorAll('.report-card')
-    for (let i = 0; i < cards.length; i++) {
-      cards[i].addEventListener('click', handleReportCardClick)
-    }
+  for (let i = 0; i < cards.length; i++) {
+    cards[i].addEventListener('click', () => {
+      void (async () => { 
+        await handleReportCardClick.call(cards[i] as HTMLElement)
+      })()  
+    })
+  }
 }
 
 export {

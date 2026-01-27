@@ -23,12 +23,12 @@ async function loadEntitiesDropdownForGroups () {
 async function loadGroups () {
   const groups = await getGroupsForCurrentEntity()
   let tableRows = ''
-  for (const i in groups) {
-    const myId = 'gp-r' + i
+  groups.forEach( (group, i) => {
+    const myId = 'gp-r' + i.toString()
     tableRows += '<tr>'
-    tableRows += "<td><button class='group-cell-text master-cell-btn' id=" + myId + ' >' + groups[i].GrpName + '</button> </td>'
+    tableRows += "<td><button class='group-cell-text master-cell-btn' id=" + myId + ' >' + group.GrpName + '</button> </td>'
     tableRows += '</tr>'
-  }
+  })
   const cont = document.getElementById('master-groups-content')
   if (!cont) { return}
   cont.innerHTML = tableRows
@@ -68,8 +68,8 @@ function handleSelection(this: HTMLElement)  {
 async function entityChanged(idx: number) {
   const ents = await getEntities()
   const ent = ents[idx]
-  setCurrentEntityId(ent.Id)
-  loadGroups()
+  await setCurrentEntityId(ent.Id)
+  await loadGroups()
 }
 
 export { loadEntitiesDropdownForGroups, loadGroups, entityChanged }

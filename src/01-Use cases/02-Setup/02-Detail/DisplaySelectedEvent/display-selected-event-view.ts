@@ -17,13 +17,18 @@ const displaySelectedEvent = `
 `
 // Listens for the 'event-selected' event
 const setupEventDetailListeners = function () {
-  document.addEventListener('event-selected', handleEventSelected)
+  document.addEventListener('event-selected', (event) => {
+    void (async () => { 
+      await handleEventSelected(event)
+    })()
+  })
 }
 
 async function handleEventSelected (ev: Event) {
   if (ev instanceof CustomEvent) {
+    const detail = (ev.detail as { id: string })
     // Get row index
-    const rowStrg = ev.detail.id.slice(4)
+    const rowStrg = detail.id.slice(4)
     const rowNumber = parseInt(rowStrg)
 
     // Get event on that row

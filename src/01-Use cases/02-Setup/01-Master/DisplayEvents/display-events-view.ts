@@ -21,22 +21,30 @@ const displayEvents = `
 const setupEventsDropdownListeners = function () {
     const ent = document.getElementById('events-select-entities') as HTMLSelectElement
     if (ent) {
-      ent.addEventListener('change', handleEntityDropDownChange)
+      ent.addEventListener('change', () => {
+        void (async () => {
+          await handleEntityDropDownChange.call(ent)
+        })()
+      })
     }
     const grp = document.getElementById('events-select-groups') as HTMLSelectElement
     if (grp) {
-      grp.addEventListener('change', handleGroupDropDownChange)
+      grp.addEventListener('change', () => {
+        void (async () => {
+          await handleGroupDropDownChange.call(grp)
+        })()
+      })
     }
   }
   
-function handleEntityDropDownChange(this: HTMLElement) {
+async function handleEntityDropDownChange(this: HTMLElement) {
   const el = this as HTMLSelectElement
-  eventsEntityChanged(el.selectedIndex)
+  await eventsEntityChanged(el.selectedIndex)
 }
 
-function handleGroupDropDownChange(this: HTMLElement) {
+async function handleGroupDropDownChange(this: HTMLElement) {
   const el = this as HTMLSelectElement
-  eventsGroupChanged(el.selectedIndex)
+  await eventsGroupChanged(el.selectedIndex)
 }
 
 export { displayEvents, setupEventsDropdownListeners }

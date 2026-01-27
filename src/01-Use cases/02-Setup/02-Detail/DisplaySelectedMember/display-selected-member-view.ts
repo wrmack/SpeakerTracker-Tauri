@@ -20,14 +20,19 @@ const initialiseMemberDetail = function () {
 }
 
 const setupMemberDetailListeners = function () {
-  document.addEventListener('member-selected', handleMemberSelected )
+  document.addEventListener('member-selected', (event) => {
+    void (async () => { 
+      await handleMemberSelected(event)
+    })()
+  }) 
 }
 
 // Handlers
 
 async function handleMemberSelected (ev:Event) {
   if (ev instanceof CustomEvent) {
-    const rowStrg = ev.detail.id.slice(4)
+    const detail = ev.detail as { id: string }
+    const rowStrg = detail.id.slice(4)
     const rowNumber = parseInt(rowStrg)
     const member = await getMemberAtIdx(rowNumber)
     const mt = document.getElementById('mbr-title')

@@ -8,15 +8,16 @@ import {
 } from "../02-Models/models.js"
 
 import { getDb } from "../content"
+import { TableState } from "../types/interfaces.js"
 
-// import {
-//   Entity,
-//   Member,
-//   Group,
-//   GroupEvent,
-//   DebateSpeech,
-//   SectionList
-// } from "../types/interfaces"
+import {
+  Entity,
+  Member,
+  Group,
+  GroupEvent,
+  // DebateSpeech,
+  SectionList
+} from "../types/interfaces"
 
 
 /**
@@ -97,29 +98,25 @@ const setIsSetupSheetExpanded = (isExpanded: boolean) => {
 
 /**  ------- Getters and setters: selected Entity, Group, Event ---------------- */ 
 
-/** Sets `selectedEntityId` as well as storing it in the 
+/** Sets `currentEntityId` as well as storing it in the 
  *  the database's state table.
  * @param {number} id The entity's id.
  */
 const setCurrentEntityId = async (id: number) => {
   currentEntityId = id
   const sql = `UPDATE State SET EntityId = ${id};`
-  // await window.myapi.connect()
-  // await window.myapi.selectAll(sql)
   const db = getDb()
-  db.execute(sql)
+  await db.execute(sql)
 }
 
 
-/** Sets `selectedGroupId` as well as storing it in the 
+/** Sets `currentGroupId` as well as storing it in the 
  *  the database's state table.
  * @param {number} id The group's id.
  */
 const setCurrentGroupId = async (id: number) => {
   currentGroupId = id
   const sql = `UPDATE State SET GroupId = ${id};`
-  // await window.myapi.connect()
-  // await window.myapi.selectAll(sql)
   const db = getDb();
   await db.execute(sql);
 }
@@ -127,8 +124,6 @@ const setCurrentGroupId = async (id: number) => {
 const setCurrentEventId = async (id: number) => {
   currentEventId = id
   const sql = `UPDATE State SET EventId = ${id};`
-  // await window.myapi.connect()
-  // await window.myapi.selectAll(sql)
   const db = getDb()
   await db.execute(sql)
 }
@@ -136,13 +131,14 @@ const setCurrentEventId = async (id: number) => {
 const getSavedEntGroupId = async () => {
   // Check there is saved state in database
   const rowsSql = `SELECT COUNT(*) AS RowCount FROM State;`
-  // await window.myapi.connect()
-  // const rows = await window.myapi.selectAll(rowsSql)
   const db = getDb()
-  const rows = await db.select(rowsSql) as Array<any>
+  const rows: {RowCount: number}[] = await db.select(rowsSql) 
   if (rows[0].RowCount == 0) {
     // No saved state exists so save first group of first entity
-    const ent = await getEntityAtIdx(0) as Entity
+    const ent = await getEntityAtIdx(0)
+    if (ent instanceof Error) {
+      throw ent
+    }
     const grpIds = await getGroupIdsForEntityId(ent.Id)
     let createRowSql = ''
     if (grpIds.length == 0) {
@@ -151,20 +147,21 @@ const getSavedEntGroupId = async () => {
     else {
       createRowSql = `INSERT INTO State (EntityId, GroupId) VALUES (${ent.Id}, ${grpIds[0].Id})` 
     }
-    // await window.myapi.selectAll(createRowSql)
     await db.execute(createRowSql)
-    return {entId: ent.Id, grpId: grpIds[0]}
+    return {entId: ent.Id, grpId: grpIds[0].Id}
   } else {
     // Get the saved state
     const sql = `SELECT EntityId, GroupId FROM State;`
-    // const ret = await window.myapi.selectAll(sql)
-    const ret = await db.select(sql) as Array<any>
-    let entId = ret[0].EntityId as number
-    let grpId = ret[0].GroupId as number
+    const ret:{EntityId: number, GroupId: number}[] = await db.select(sql) 
+    let entId = ret[0].EntityId 
+    let grpId = ret[0].GroupId
     // Sanity check entId
     const entExists = await entityIdExists(entId)
     if (!entExists) {
       const ent = await getEntityAtIdx(0)
+      if (ent instanceof Error) {
+        throw ent
+      }
       entId = ent.Id 
     }
     // Sanity check grpId
@@ -199,14 +196,13 @@ const setCurrentEntGroupEvtId = async (entIdx: number, grpIdx: number, evtIdx: n
   
   let evtId
   if (evtIdx !== null) {
-    const evt = await getOpenEventAtIdx(evtIdx) as GroupEvent
+    const evt: GroupEvent = await getOpenEventAtIdx(evtIdx)
     evtId = evt.Id
   }
   else evtId = null
   
   currentEventId = evtId
   const sql = `UPDATE State SET EntityId = ${currentEntityId}, GroupId = ${currentGroupId}, EventId = ${currentEventId};`
-  // await window.myapi.selectAll(sql)
   const db = getDb()
   await db.execute(sql)
 }
@@ -219,24 +215,22 @@ const getCurrentEventDate = () => {
   return currentEventDate
 }
 
-const saveTableState = async (table0:Member[],table1:Member[],table2:SectionList[]) => {
+const saveTableState = async (table0: Member[],table1:Member[],table2:SectionList[]) => {
   const tableObj = { table0:table0, table1:table1, table2:table2}
   const jsonObj = JSON.stringify(tableObj)
   // const jsonStrg = jsonObj.toString()
   const sql = `UPDATE State SET Tables = '${jsonObj}';`
-  // await window.myapi.selectAll(sql)
   const db = getDb()
   await db.execute(sql)
 }
 
 const getTableState = async () => {
   const sql = `SELECT Tables FROM State;`
-  // const selArray = await window.myapi.selectAll(sql)
   const db = getDb()
-  const selArray = await db.select(sql) as Array<any>
+  const selArray: {Tables: string}[] = await db.select(sql) 
   if (selArray.length === 0) { return null}
-  const tableJsonString = selArray[0].Tables
-  const tableJsonObj = JSON.parse(tableJsonString)
+  const tableJsonString: string = selArray[0].Tables
+  const tableJsonObj: TableState = JSON.parse(tableJsonString) as TableState
   return tableJsonObj
 }
 
