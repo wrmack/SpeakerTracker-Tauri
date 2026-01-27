@@ -1,9 +1,9 @@
 import { addEvent } from '../../../../../02-Models/models.js'
 import { currentGroupId, setCurrentEventDate, getCurrentEventDate } from '../../../../../03-State/state.js'
 import { enableButtons } from '../../../setup-view.js'
-import flatpickr from '../../../../../04-Utils/Flatpickr/index.js'
-import { Instance } from '../../../../../04-Utils/Flatpickr/types/instance.js'
-
+// import flatpickr from '../../../../../04-Utils/Flatpickr/index.js'
+// import { Instance } from '../../../../../04-Utils/Flatpickr/types/instance.js'
+import flatpickr from 'flatpickr'
 
 // let memberIds: number[] = []
 
@@ -24,7 +24,7 @@ const loadAddEventSheet = function () {
     const edSht = document.getElementById('editing-sheet')
     if (!edSht) {return}
     edSht.innerHTML = addEventView
-    const pickrInstance = flatpickr('#input-add-event',{enableTime: true, dateFormat: "Y-m-d H:i"}) as Instance
+    const pickrInstance = flatpickr('#input-add-event',{enableTime: true, dateFormat: "Y-m-d H:i"}) as flatpickr.Instance
     pickrInstance.config.onChange.push(function() {
       const selDate = pickrInstance.selectedDates[0]
       const isoDate = pickrInstance.formatDate(selDate,'Z')
@@ -41,7 +41,11 @@ const setupAddEventListeners = function () {
     // Save button
     const svBtn = document.getElementById('add-event-save-btn')
     if (!svBtn) {return}
-    svBtn.addEventListener('click', handleSave)
+    svBtn.addEventListener('click', () => {
+      void (async () => { 
+        await handleSave()
+      })()  
+    })
 }
 
 //

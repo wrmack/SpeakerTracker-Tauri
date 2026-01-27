@@ -202,8 +202,8 @@ const handleReportCardClick = async function (this: HTMLElement)  {
 
   await reportWin.once("tauri://created", () => {
     void (async () => {
-      // await reportWin.show()
-      // await reportWin.setFocus()
+      await reportWin.show()
+      await reportWin.setFocus()
       console.log("Report card window created.");
     })()
   })
