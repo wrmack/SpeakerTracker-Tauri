@@ -1,5 +1,3 @@
-// import { Window } from '@tauri-apps/api/window'
-// import { Webview } from "@tauri-apps/api/webview"
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow"
 import { emit } from '@tauri-apps/api/event';
 import { listen } from '@tauri-apps/api/event';
@@ -19,8 +17,6 @@ import {
   setNoteForCurrentDebate
 } from '../01-Track speakers/speakers-presenter.js'
 
-// import {infoText} from './info.js'
-
 // import { eventsGroupChanged } from '../02-Setup/01-Master/DisplayEvents/display-events-presenter.js'
 import { 
   isSetupSheetExpanded, 
@@ -36,14 +32,20 @@ import { loadSetupMeetingSheet } from './meetingsetup-view.js'
 import { GroupEvent } from '../../types/interfaces.js'
 // import { call } from "assert/strict";
 
+
+/**
+ * State of timer and related variables
+ */
 let totalSeconds = 0
 let timer: NodeJS.Timeout | undefined
 let isTimerOn = false
+let playDisabled = false
+let pauseDisabled = true
+let stopDisabled = true
 let isPaused = false
 let isDragging = false
 let draggedRow: HTMLTableRowElement
 let isClockVisible = false
-// let clockWindow: Window | null
 let clockWin: WebviewWindow | null;
 
 /** The html for the main speaker tracker page. */
@@ -143,31 +145,9 @@ const speaker_tracker = `
 <div id='mtgsetup-info-record-display' class='sheet-info'></div>
 `
 
-// const windowTimer = `
-// <html>
-// <head>
-// <meta http-equiv="Content-Security-Policy" content="default-src 'self'; ">
-// <title>Speaker Tracker Info</title>
-// <link href="css/large-timer.css" rel="stylesheet">
-// </head>
-// <body>
-// <div id="modal-controls">
-//   <button id="modal-btn-play" class="modal-btn-control">
-//     <span class="modal-icon-control">a</span>
-//   </button>
-//   <button id="modal-btn-pause" class="modal-btn-control" disabled>
-//     <span class="modal-icon-control">c</span>
-//   </button>
-//   <button id="modal-btn-stop" class="modal-btn-control" disabled>
-//     <span class="modal-icon-control">b</span>
-//   </button>
-// </div>
-// <div id='modal-clock-display'>00:00</div>
-// </body>
-// </html>
-// `
+
 /**
- * 
+ * Handler called after meeting setup is done and speakers-view is being set up.
  */
 const resetAfterMeetingSetupDoneClicked = async (evtIdx: number | null) => {
   await resetTables()
@@ -241,6 +221,9 @@ const setupSpeakingTableSectionChangeListener = () => {
   document.addEventListener('section-change', handleSpeakingTableSectionChange)
 }
 
+/**
+ * Add `click` event listener for meeting setup button in right side-bar.
+ */
 const setupMeetingSetupListeners = () => {
   const meetingSetupBtn = document.getElementById('sidebar-meeting-setup-btn')
   if (!meetingSetupBtn) {return}
@@ -251,6 +234,9 @@ const setupMeetingSetupListeners = () => {
   })
 }
 
+/**
+ * Add `click` event listener for clock expand button in right side-bar.
+ */
 const setupClockExpandListener = () => {
   const exp = document.getElementById('sidebar-clock-btn')
   exp?.addEventListener('click', handleClockExpand)
@@ -276,6 +262,9 @@ const setupResetListener = () => {
   })    
 }
 
+/**
+ * Add `click` event listeners for save debate, end meeting, and cancel meeting buttons.
+ */
 const setupMeetingEventListeners = () => {
   const debateEnd = document.getElementById('sidebar-savedebate-btn') as HTMLButtonElement
   debateEnd.addEventListener('click', () => {
@@ -306,8 +295,9 @@ const setupInfoListener = () => {
   info?.addEventListener('click', () => { void (async () => await handleInfoButtonClick())() })
 }
 
+
 /**
- * Add `click` event listeners to large timer buttons.
+ * Add `click` event listeners to timer buttons at top of main window.
  */
 const setupTimerControlListeners = async () => {
   const playbtn = document.getElementById('btn-play') as HTMLElement
@@ -339,6 +329,7 @@ const setupTimerControlListeners = async () => {
     myTimer()
   } 
 
+  // Listen for events from modal clock window
   await listen<string>("modal-timer-btn", (ev) => {
     const playbtn = document.getElementById('btn-play') as HTMLButtonElement
     const pausebtn = document.getElementById('btn-pause') as HTMLButtonElement
@@ -740,6 +731,9 @@ async function handlePlayClicked(this: HTMLElement, ev: Event): Promise<void> {
     await emit('timer-btn', { play_disabled: true, pause_disabled: false, stop_disabled: false });
   }
   startTimer()
+  playDisabled = true
+  pauseDisabled = false
+  stopDisabled = false
 }
 
 
@@ -813,6 +807,9 @@ async function handleStopClicked(this: HTMLElement, ev: Event) {
     await emit('timer-btn', { play_disabled: false, pause_disabled: true, stop_disabled: true });
   }
   stopTimer()
+  playDisabled = false
+  pauseDisabled = true
+  stopDisabled = true
 }
 
 async function handlePauseClicked(this: HTMLElement, ev: Event) {
@@ -874,6 +871,9 @@ async function handlePauseClicked(this: HTMLElement, ev: Event) {
   }
   stopTimer()
   isPaused = true
+  playDisabled = false
+  pauseDisabled = true
+  stopDisabled = false
 }
 
 // function handleSpkgTableTimerEvent(this: Element, ev: Event) {
@@ -916,35 +916,32 @@ async function handleClockNewWindow() {
   //   clockWindow.close()
   //   clockWindow = null
   // }
-  if (clockWin) {
-    await clockWin.close()
-    clockWin = null
-  } 
+  // if (clockWin) {
+  //   await clockWin.close()
+  //   clockWin = null
+  // } 
   // const clockWinIsVisible = await clockWin.isVisible()
   // if (clockWinIsVisible) {
   //   clockWin.close()
   // }
-  else {
+  // else {
     // clockWindow = window.open('', 'clock','width=1100,height=560,backgroundColor="#525254"') as Window
 
-    clockWin = new WebviewWindow("clock", {
+  clockWin = new WebviewWindow("clock", {
     url: "./clock.html",
     title: "Clock",
     width: 1100,
     height: 560,
     resizable: false,
-    minimizable: false
+    minimizable: false,
+    devtools: true
   });
 
   await clockWin.once("tauri://created", () => {
     void (async () => {
       await clockWin?.show()
       await clockWin?.setFocus()
-
-      if (clockWin){
-        await clockWin.show();
-        await clockWin.setFocus();
-      }
+      await emit('timer-btn', { play_disabled: playDisabled, pause_disabled: pauseDisabled, stop_disabled: stopDisabled });
     })();
   });
 
@@ -960,7 +957,7 @@ async function handleClockNewWindow() {
   //     const pauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
   //     pauseBtn.addEventListener('click', handlePauseClicked)
   //   }
-  }
+  // }
 }
 
 function handleNoteClicked() {
@@ -1073,12 +1070,6 @@ function myTimer () {
   const ac = document.getElementById('timer-active-cell') 
   if (ac) {ac.innerText = timerStrg}  // Might not exist
 
-  // if (clockWindow) {
-  //   const largeClkWinDiv = clockWindow.document.getElementById('modal-clock-display') 
-  //   if (largeClkWinDiv) {largeClkWinDiv.innerHTML = timerStrg }
-  // }
-  // await emit('timer-event', {data:timerStrg});
-  // updateTimeForListMember(totalSeconds)
   void (async () => {
     await emit('timer-event', { data: timerStrg });
     updateTimeForListMember(totalSeconds);

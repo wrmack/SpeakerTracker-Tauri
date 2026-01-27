@@ -48,6 +48,7 @@
   .flatpickr-calendar.static.open {
     z-index: 999;
     display: block;
+    margin-left: 20px
   }
   .flatpickr-calendar.multiMonth .flatpickr-days .dayContainer:nth-child(n+1) .flatpickr-day.inRange:nth-child(7n+7) {
     -webkit-box-shadow: none !important;
@@ -130,6 +131,8 @@
   .flatpickr-wrapper {
     position: relative;
     display: inline-block;
+    margin-left: 170px;
+    width: 85%;
   }
   .flatpickr-months {
     display: -webkit-box;

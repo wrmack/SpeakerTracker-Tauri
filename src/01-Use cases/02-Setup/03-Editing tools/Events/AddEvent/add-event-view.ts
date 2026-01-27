@@ -15,7 +15,7 @@ const addEventView = `
   </div>
   <h1>Add a new event</h1>
   <div class='field-container'>
-    <input id="input-add-event" class="flatpickr flatpickr-input" type="text" placeholder="Select Date.." readonly="readonly">
+    <input id="input-add-event" class="flatpickr flatpickr-input" type="text" placeholder="Select Date...." readonly="readonly">
   </div>
 
 `
@@ -24,7 +24,7 @@ const loadAddEventSheet = function () {
     const edSht = document.getElementById('editing-sheet')
     if (!edSht) {return}
     edSht.innerHTML = addEventView
-    const pickrInstance = flatpickr('#input-add-event',{enableTime: true, dateFormat: "Y-m-d H:i"}) as flatpickr.Instance
+    const pickrInstance = flatpickr('#input-add-event',{enableTime: true, dateFormat: "Y-m-d H:i",static: true}) as flatpickr.Instance
     pickrInstance.config.onChange.push(function() {
       const selDate = pickrInstance.selectedDates[0]
       const isoDate = pickrInstance.formatDate(selDate,'Z')
