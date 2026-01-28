@@ -37,5 +37,6 @@ export default defineConfig(async () => ({
         clock: resolve(__dirname, "clock.html")
       },
     },
+    sourcemap: !!process.env.TAURI_ENV_DEBUG,
   },  
 }));

@@ -88,6 +88,12 @@ hr {
   opacity: 0.5;
   cursor: pointer;
   background-color: #eee;
+  border: lightpink solid 1px;
+}
+
+.dragging {
+  opacity: 0.9;
+  border: lightgray solid 2px;
 }
 
 @font-face {

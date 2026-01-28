@@ -30,6 +30,7 @@ import { formatIsoDate, getTimeStringFromSeconds } from '../../04-Utils/utils.js
 import { loadSetupMeetingSheet } from './meetingsetup-view.js'
 // import { isSet } from 'util/types'
 import { GroupEvent } from '../../types/interfaces.js'
+
 // import { call } from "assert/strict";
 
 
@@ -43,8 +44,8 @@ let playDisabled = false
 let pauseDisabled = true
 let stopDisabled = true
 let isPaused = false
-let isDragging = false
-let draggedRow: HTMLTableRowElement
+let isDragEnabled = false
+let draggedRow: HTMLTableRowElement | null
 let isClockVisible = false
 let clockWin: WebviewWindow | null;
 
@@ -401,77 +402,71 @@ const setupSpeakingTableTimerListeners = () => {
  */
 async function handleMenuClick() {
   const waitingRows = document.querySelectorAll('.waiting-row')
-  if (!isDragging) {
-    isDragging = true
+  const tableBody: HTMLElement | null = document.getElementById('Table1Content') 
+
+  if (!isDragEnabled) {
+    isDragEnabled = true
     waitingRows.forEach(el => {
       el.setAttribute("draggable", "true")
-      el.addEventListener('dragstart', handleDragStart)
-      el.addEventListener('dragover', handleDragOver)
-      el.addEventListener('drop', handleDrop)
     })
+
+    if (!tableBody) {return}
+
+    tableBody.addEventListener('dragstart', function(e) {
+      const evTarget = e.target as HTMLElement
+      if (evTarget instanceof HTMLTableRowElement) {
+        if (evTarget.tagName === "TR") {
+          draggedRow = evTarget
+          evTarget.classList.add("dragging")
+          if (e.dataTransfer) { e.dataTransfer.effectAllowed = "move" }
+        }
+      }
+    })
+
+    tableBody.addEventListener("dragover", function(e) {
+      e.preventDefault() // Allow drop
+      const evTarget = e.target
+      if (evTarget instanceof HTMLElement) {
+        const targetRow = evTarget.closest("tr")
+        if (draggedRow == null) {return}
+        if (targetRow && targetRow !== draggedRow) {
+          const bounding = targetRow.getBoundingClientRect()
+          const offset = e.clientY - bounding.top;
+          const shouldInsertAfter = offset > bounding.height / 2
+          if (shouldInsertAfter) {
+            targetRow.after(draggedRow)
+          } else {
+            targetRow.before(draggedRow)
+          }
+        }
+      }
+    });
+
+    tableBody.addEventListener("dragend", function() {
+      if (draggedRow) {
+        draggedRow.classList.remove("dragging")
+        draggedRow = null
+      }
+    });
+
   }
   else {
-    isDragging = false
+    isDragEnabled = false
     const indexArray: number[] = []
     waitingRows.forEach(el => {
       el.removeAttribute('draggable')
-      el.removeEventListener('dragstart', handleDragStart)
-      el.removeEventListener('dragover', handleDragOver)
       const oldIdx = el.id.slice(4,6)
       indexArray.push(parseInt(oldIdx))
     })
+    tableBody?.removeEventListener('dragstart', function(){})
+    tableBody?.removeEventListener('dragover', function(){})
+    tableBody?.removeEventListener('dragend', function(){})
     console.log('indexArray: ', indexArray)
     await updateWaitingTableAfterDragging(indexArray)
     setupArrowButtonListeners()
     setupSpeakingTableMemberListeners()
     setupSpeakingTableTimerListeners()
   }
-}
-
-/**
- * Called by the 'dragstart' Event listener
- * Sets the 'draggedRow' variable
- * @param ev The 'dragstart' Event as passed in
- */
-function handleDragStart(ev: Event) {
-  draggedRow = (ev.target as HTMLTableRowElement)
-  console.log("dragstart: row: ", draggedRow)
-}
-
-
-function handleDragOver(ev: Event) {
-  ev.preventDefault()
-  console.log("dragover")
-  const evTarget = ev.target
-  if (evTarget instanceof HTMLElement) {
-    // Need to get an array of all rows and check index position of row of event 
-    // target in the array.  Create array by getting the children of <tbody>. 
-    // The event target might be a <span> or <td> element depending on the dragging point.
-    // Check if event target is a <td>.
-    let bdy = evTarget.parentElement?.parentElement
-    let rw = evTarget.parentElement
-    if (!bdy || !rw) {return}
-    if (bdy.id != 'Table1Content') {
-      // Event target must be <span>
-      bdy = bdy?.parentElement
-      rw = rw?.parentElement
-    }
-    if (!bdy || !rw) {return}
-    if (bdy.id != 'Table1Content') {return}
-    // bdy must be <tbody>
-    const tableRowArray = Array.from(bdy.children) as HTMLTableRowElement[]
-    const indexDraggedRw = tableRowArray.indexOf(draggedRow)
-    const indexDragoverRw = tableRowArray.indexOf(rw as HTMLTableRowElement)
-    if(indexDragoverRw>indexDraggedRw)
-      (rw).after(draggedRow)
-    else
-      (rw).before(draggedRow)
-  } 
-}
-
-function handleDrop(this: HTMLElement, ev: Event) {
-  ev.preventDefault()
-  console.log("drop: ",this)
 }
 
 async function handleRightArrowClick(this: HTMLElement) {
@@ -595,6 +590,7 @@ async function handleCancelMeetingButtonClick(this: HTMLElement) {
   // Reset other
   setMeetingIsBeingRecorded(false)
   await resetAll()
+  
 }
 
 async function handleResetButtonClick(this: HTMLElement) {
@@ -911,6 +907,10 @@ function handleClockExpand(this: HTMLElement) {
   isClockVisible = isClockVisible == false ? true : false
 }
 
+/**
+ * Handles opening the clock in a new window.
+ * Event listeners for the new window are embedded in clock.html
+ */
 async function handleClockNewWindow() {
   // if (clockWindow && !clockWindow.closed) {
   //   clockWindow.close()
@@ -934,7 +934,7 @@ async function handleClockNewWindow() {
     height: 560,
     resizable: false,
     minimizable: false,
-    devtools: true
+    devtools: false
   });
 
   await clockWin.once("tauri://created", () => {

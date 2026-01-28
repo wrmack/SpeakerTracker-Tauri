@@ -17,7 +17,8 @@
         "minWidth": 1150,
         "minHeight": 850,
         "theme":"Dark",
-        "devtools": true
+        "devtools": true,
+        "dragDropEnabled": false
       }
     ],
     "security": {
