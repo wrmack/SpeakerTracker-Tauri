@@ -934,16 +934,20 @@ async function handleClockNewWindow() {
     height: 560,
     resizable: false,
     minimizable: false,
-    devtools: false
+    devtools: true
   });
 
   await clockWin.once("tauri://created", () => {
     void (async () => {
       await clockWin?.show()
       await clockWin?.setFocus()
-      await emit('timer-btn', { play_disabled: playDisabled, pause_disabled: pauseDisabled, stop_disabled: stopDisabled });
     })();
   });
+
+  await clockWin.once('clock-ready', async () => {
+    await emit('timer-btn', { play_disabled: playDisabled, pause_disabled: pauseDisabled, stop_disabled: stopDisabled });
+  })
+
 
   await clockWin.once("tauri://error", (e) => {
     console.error("Failed to create help window", e);

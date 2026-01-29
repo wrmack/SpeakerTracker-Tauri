@@ -30,6 +30,10 @@ import {
   setupReports
 } from './01-Use cases/03-Reports/reports-view.js'
 
+import { appDataDir } from '@tauri-apps/api/path';
+const appDataDirPath = await appDataDir();
+console.log("App data dir: ", appDataDirPath);
+
 let db:Database
 
 function getDb () {
@@ -45,7 +49,7 @@ async function initialise() {
 //   console.log("App paths: ",paths)
 //   await window.myapi.connect()
 //   await window.myapi.initDb()
-  db = await Database.load('sqlite:speakertracker.db')
+  db = await Database.load('sqlite:mydb.db')
   console.log(db)
 
   const sql = `

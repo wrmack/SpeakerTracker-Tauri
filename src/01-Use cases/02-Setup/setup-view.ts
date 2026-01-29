@@ -164,10 +164,18 @@ const setupSidebarListeners =  async function () {
   })
   document.addEventListener('ent-saved', (event) => {
     void (async () => {
+      await showEntities()
       if (event instanceof CustomEvent) {
-        await showEntities()
+        const detail = event.detail as { deleted?: boolean }
+        if (detail.deleted && detail.deleted === true) {
+          const numEnt = await getNumberOfRowsInEntitiesTable() 
+          if (numEnt === 0) {
+            const sidemem =  document.getElementById('setup-sidebar-mbrs-btn') as HTMLButtonElement
+            sidemem.disabled = true
+          }
+        }
       }
-    })
+    })()
   })
 
   // Members button

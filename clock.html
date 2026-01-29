@@ -81,23 +81,7 @@
         stop_btn.disabled = event.payload.stop_disabled
     })
 
-
-    // if (this.id == 'modal-btn-play') {
-    //   const modPlayBtn = this as HTMLButtonElement
-    //   modPlayBtn.disabled = true
-    //   const modPauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
-    //   modPauseBtn.disabled = false
-    //   const modStopBtn = clockWindow.document.getElementById('modal-btn-stop') as HTMLButtonElement
-    //   modStopBtn.disabled = false
-
-    //   const btn = document.getElementById('btn-play') as HTMLButtonElement
-    //   btn.disabled = true
-    //   const pauseBtn = document.getElementById('btn-pause') as HTMLButtonElement
-    //   pauseBtn.disabled = false
-    //   const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement
-    //   stopBtn.disabled = false
-    // }
-  
+  emit('clock-ready', 'clock-loaded')
 </script>
 </body>
 </html>

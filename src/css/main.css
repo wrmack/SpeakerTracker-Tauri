@@ -71,7 +71,7 @@ input[type="checkbox"] {
 }
 
 input[disabled] {
-  color: black;
+  color: lightgray;
 }
 
 #input-edit-event {
