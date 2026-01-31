@@ -26,7 +26,10 @@ export const setupAddEntityListeners = function () {
   // Save button
   const sv = document.getElementById('add-entity-save-btn');
   if (!sv) {return}
-  sv.addEventListener('click', handleSave)
+  const svClickHandler = async () => {
+    await handleSave()
+  }
+  sv.addEventListener('click', svClickHandler as EventListener)
 }
 
 //

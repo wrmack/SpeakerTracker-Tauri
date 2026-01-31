@@ -41,11 +41,10 @@ const setupAddEventListeners = function () {
     // Save button
     const svBtn = document.getElementById('add-event-save-btn')
     if (!svBtn) {return}
-    svBtn.addEventListener('click', () => {
-      void (async () => { 
-        await handleSave()
-      })()  
-    })
+    const svBtnClickHandler = async () => {
+      await handleSave()
+    }
+    svBtn.addEventListener('click', svBtnClickHandler as EventListener)
 }
 
 //

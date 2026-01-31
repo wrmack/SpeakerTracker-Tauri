@@ -33,11 +33,10 @@ const setupDeleteEntityListeners = function () {
   // Delete button
   const del = document.getElementById('delete-entity-save-btn');
   if (!del) {return}
-  del.addEventListener('click', () => {
-    void (async () => {
-      await handleDelete()
-    })()
-  })
+  const delClickHandler = async () => {
+    await handleDelete()
+  } 
+  del.addEventListener('click', delClickHandler as EventListener)
 }
 
 //

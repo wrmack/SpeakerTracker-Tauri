@@ -2,6 +2,7 @@ import { getMembersForCurrentEntity, addGroup } from '../../../../../02-Models/m
 import { currentEntityId } from '../../../../../03-State/state.js'
 import { getDb } from '../../../../../content.js'
 import { enableButtons } from '../../../setup-view.js'
+import { Member } from '../../../../../types/interfaces.js'
 
 let memberIds: number[] = []
 
@@ -51,7 +52,7 @@ const setupAddGroupListeners = function () {
 
   // '>' is pressed for selecting members for meeting group
   const addgp =  document.getElementById('add-group-arrow') as HTMLElement
-  addgp.addEventListener('click', async () => {
+  const addgpClickHandler = async () => {
     const mem = document.getElementById('editing-sheet-selectMembers');
     if (!mem) {return}
     mem.innerHTML = selectMembersView
@@ -59,28 +60,31 @@ const setupAddGroupListeners = function () {
     // Select members sheet cancel button
     const canc = document.getElementById('select-members-cancel-btn')
     if (!canc) {return}
-    canc.addEventListener('click', () => {
+    const cancClickHandler = () => {
       const mem = document.getElementById('editing-sheet-selectMembers');
       if (!mem) {return}
       mem.style.left = '100%'
-    })
+    }
+    canc.addEventListener('click', cancClickHandler as EventListener)
+
     // Select members sheet - populate list of members
     const members = await getMembersForCurrentEntity()
     let memberItems = ''
-    for (const i in members) {
+    // for (const i in members) {
+    members.forEach( (member: Member, i) => {
       memberItems += "<div class='cbitem'>"
       memberItems += `<input class='chbx' id='cb-${i}' type='checkbox'>`
-      memberItems += `<label for='cb-${i}'>${members[i].firstName} ${members[i].lastName}</label>`
-      memberItems += `<input id='cb-id-${i}' type='hidden' value=${members[i].id}>`
+      memberItems += `<label for='cb-${i}'>${member.firstName} ${member.lastName}</label>`
+      memberItems += `<input id='cb-id-${i}' type='hidden' value=${member.id}>`
       memberItems += "</div>"
-      const lst = document.getElementById('selection-list');
-      if (!lst) {return}
-      lst.innerHTML = memberItems
-    }
+    })
+    const lst = document.getElementById('selection-list');
+    if (!lst) {return}
+    lst.innerHTML = memberItems
     // Select members sheet - done button
     const done = document.getElementById('select-members-done-btn');
     if (!done) {return}
-    done.addEventListener('click', () => {
+    const doneClickHandler = () => {
       const selectedMbrs = document.querySelectorAll('.chbx:checked') 
       const selectedMbrsIds: number[] = []
       for (let i = 0 ; i < selectedMbrs.length; ++i) {
@@ -108,12 +112,17 @@ const setupAddGroupListeners = function () {
       const ed = document.getElementById('editing-sheet-selectMembers')
       if (!ed) {return}
       ed.style.left = '100%'
-    })
-  })
+    }
+    done.addEventListener('click', doneClickHandler as EventListener)
+  }
+  addgp.addEventListener('click', addgpClickHandler as EventListener)
 
   // Save button
   const sv = document.getElementById('add-group-save-btn') as HTMLInputElement
-  sv.addEventListener('click', handleSave)
+  const svClickHandler = async () => {
+    await handleSave()
+  }
+  sv.addEventListener('click', svClickHandler as EventListener)
 }
 
 const moveSelectMembersSheet = () => {

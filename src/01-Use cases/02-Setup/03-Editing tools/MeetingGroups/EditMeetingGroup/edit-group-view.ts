@@ -7,9 +7,9 @@ import {
 import { masterRowIdx } from '../../../../../03-State/state.js'
 import { getDb } from '../../../../../content.js'
 import { enableButtons } from '../../../setup-view.js'
+import { Member } from '../../../../../types/interfaces.js'
 
-
-let memberIds:any[] = []
+let memberIds:number[] = []
 
 // Inserted into sheet
 const editGroupView = `
@@ -69,16 +69,17 @@ const setupEditGroupListeners = () => {
 
   // '>' is pressed for selecting members for meeting group
   const garr = document.getElementById('edit-group-arrow') as HTMLElement
-  garr.addEventListener('click', async () => {
+  const garrClickHandler = async () => {
     const mem = document.getElementById('editing-sheet-selectMembers') as HTMLElement
     mem.innerHTML = editSelectMembersView
     moveEditSelectMembersSheet()
     // Select members sheet cancel button
     const selcan = document.getElementById('edit-select-members-cancel-btn') as HTMLElement
-    selcan.addEventListener('click', () => {
+    const selcanClickHandler = () => {
       const selmem = document.getElementById('editing-sheet-selectMembers') as HTMLElement
       selmem.style.left = '100%'
-    })
+    }
+    selcan.addEventListener('click', selcanClickHandler as EventListener)
     // Select members sheet - populate list of members
     const members = await getMembersForCurrentEntity()
     let memberItems = ''
@@ -86,14 +87,14 @@ const setupEditGroupListeners = () => {
       memberItems = `<div class='cbitem'><p>&nbsp;&nbsp;This entity has no members.  Please add members first.</p></div>`
     }
     else {
-      for (const i in members) {
+      // for (const i in members) {
+      members.forEach( (member: Member,i) => {
         memberItems += "<div class='cbitem'>"
         memberItems += `<input class='echbx' id='ecb-${i}' type='checkbox'>`
-        memberItems += `<label for='ecb-${i}'>${members[i].firstName} ${members[i].lastName}</label>`
+        memberItems += `<label for='ecb-${i}'>${member.firstName} ${member.lastName}</label>`
         memberItems += `<input id='ecb-id-${i}' type='hidden' value=${members[i].id}>`
         memberItems += "</div>"
-
-      }
+      })
     }
     const selist = document.getElementById('edit-selection-list')
     if (!selist) {return}
@@ -104,14 +105,14 @@ const setupEditGroupListeners = () => {
       seldone.disabled = true
     }
     else {
-      seldone.addEventListener('click', () => {
+      const seldoneClickHandler = () => {
         const selectedMbrs = document.querySelectorAll('.echbx:checked')
-        const selectedMbrsIds = []
+        const selectedMbrsIds: number[] = []
         for (let i = 0 ; i < selectedMbrs.length; ++i) {
           const elId = selectedMbrs[i].id.slice(4)
           const el = document.getElementById('ecb-id-' + elId) as HTMLInputElement
           const id = el.value
-          selectedMbrsIds.push({'MemberId': id})
+          selectedMbrsIds.push(parseInt(id))
         }
         memberIds = selectedMbrsIds
         let mbrString = ""
@@ -130,18 +131,22 @@ const setupEditGroupListeners = () => {
         edgm.value = mbrString
         const ed = document.getElementById('editing-sheet-selectMembers') as HTMLElement
         ed.style.left = '100%'
-      })
+
+        const sv = document.getElementById('edit-group-save-btn') as HTMLButtonElement
+        sv.disabled = false
+      }
+      seldone.addEventListener('click', seldoneClickHandler)
+    }
   }
-  })
+  garr.addEventListener('click', garrClickHandler as EventListener)
 
   // Save button
   const sv = document.getElementById('edit-group-save-btn') as HTMLButtonElement
-  if (memberIds.length === 0) {
-    sv.disabled = true
+  const svClickHandler = async () => {
+    await handleSave()
   }
-  else {
-    sv.addEventListener('click', handleSave)
-  }
+  sv.addEventListener('click', svClickHandler as EventListener)
+  if (memberIds.length === 0) { sv.disabled = true} else {sv.disabled = false }
 }
 
 const moveEditSelectMembersSheet = () => {
@@ -180,7 +185,7 @@ async function handleSave() {
   // Delete all current references to this group in GroupMembers then insert edited ones
   mySql += `DELETE FROM GroupMembers WHERE GroupMembers.GroupId = ${group.Id};`
   memberIds.forEach((mbrId) => {
-    mySql += `INSERT INTO GroupMembers (GroupId, MemberId) VALUES (${group.Id}, ${mbrId.MemberId});`
+    mySql += `INSERT INTO GroupMembers (GroupId, MemberId) VALUES (${group.Id}, ${mbrId});`
   })
   // await execSql(mySql)
   const db = getDb();

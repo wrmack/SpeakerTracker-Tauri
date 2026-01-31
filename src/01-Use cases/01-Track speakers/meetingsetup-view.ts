@@ -184,51 +184,38 @@ const loadSetupMeetingSheet = async () => {
   // Select entity - event listener
   const ent = document.getElementById('mtgsetup-select-entity') as HTMLSelectElement
   if (ent) {  
-    ent.addEventListener('change', () => {
-      void (async () => {
-        await handleChangedEntitySelection.call(ent)
-      })()
-    })
+    ent.addEventListener('change', handleChangedEntitySelection)
   }
  
   // Set individual timer switch - event listener
   const timer = document.getElementById('timer_type') as HTMLInputElement
   if (timer) {  
-    timer.addEventListener('change', () => {
-        handleChangedTimerType.call(timer)  
-    })
+    timer.addEventListener('change', handleChangedTimerType)
   }
 
   // Record event switch - event listener
   const record = document.getElementById('create_record') as HTMLInputElement
   if (record) {
-    record.addEventListener('change', () => {
-        handleChangedRecordEvent.call(record)
-    })
+    record.addEventListener('change', handleChangedRecordEvent)
   }
 
   // Choose event - event listener
   const eventDate = document.getElementById('mtgsetup-select-event') as HTMLSelectElement
   if (eventDate) {
-    eventDate.addEventListener('change', () => {
-        handleChangedEventDate.call(eventDate)
-    })
+    eventDate.addEventListener('change', handleChangedEventDate)
   }
 
   // Done button listener
   const doneBtn = document.getElementById('mtgsetup-done-btn')
   if (!doneBtn) {return}
-  doneBtn.addEventListener('click', () => { 
-    void (async () => {
-      await handleMeetingSetupDoneButtonClick.call(doneBtn)
-    })()
-  })  
+  doneBtn.addEventListener('click', handleMeetingSetupDoneButtonClick)
+    
 }
 
 
 // Meeting setup sheet handlers
 
-async function handleMeetingSetupDoneButtonClick(this: HTMLElement) {
+function handleMeetingSetupDoneButtonClick(this: HTMLElement) {
   const mtgSht = document.getElementById('mtgsetup-sheet')
   if (!mtgSht) {return}
 
@@ -259,11 +246,18 @@ async function handleMeetingSetupDoneButtonClick(this: HTMLElement) {
   }
 
   const evtIdx = (meetingIsBeingRecorded) ? elEvtSelect.selectedIndex : null
-  await updateDataForNewMeeting(entIdx,grpIdx,evtIdx,meetingIsBeingRecorded)
-  await resetAfterMeetingSetupDoneClicked(evtIdx)
+  void (async () => {
+    await updateDataForNewMeeting(entIdx,grpIdx,evtIdx,meetingIsBeingRecorded)
+    await resetAfterMeetingSetupDoneClicked(evtIdx)
+  })()
+
 
   mtgSht.style.left = isSetupSheetExpanded ? '-300px' : '0px'
-  if (!isSetupSheetExpanded) { await populateEntityDropdown() }
+  if (!isSetupSheetExpanded) { 
+    void (async () => {
+      await populateEntityDropdown() 
+    })()
+  }
   setIsSetupSheetExpanded(!isSetupSheetExpanded)
 }
 
@@ -328,7 +322,8 @@ function handleMtgshtInfoRecordBtnBlur() {
  * Called when different entity is selected in meeting setup, emitting a `change` event.
  * Passes the index to `entityChanged` function in `meetingsetup-presenter.js`.
  */
-async function handleChangedEntitySelection(this: HTMLSelectElement) {
+function handleChangedEntitySelection(this: HTMLSelectElement) {
+  void (async () => {
     await entityChanged(this.selectedIndex)
     const grpOptions = await populateGroupDropdown() 
     const evtOptions = await populateEventsDropdown()
@@ -336,6 +331,7 @@ async function handleChangedEntitySelection(this: HTMLSelectElement) {
     if (grp) {grp.innerHTML = grpOptions}
     const evt = document.getElementById('mtgsetup-select-event')
     if (evt) {evt.innerHTML = evtOptions}
+  })()
 }
   
 function handleChangedTimerType(this: HTMLInputElement) {

@@ -158,7 +158,10 @@ const resetAfterMeetingSetupDoneClicked = async (evtIdx: number | null) => {
   setupSpeakingTableSectionChangeListener()
   if (meetingIsBeingRecorded) {
     const noteBtn = document.getElementById('note-button') as HTMLButtonElement
-    noteBtn.addEventListener('click', handleNoteClicked)
+    const noteHandler = async () => {
+      await handleNoteClicked()
+    }
+    noteBtn.addEventListener('click', noteHandler as EventListener)
   }
   if (evtIdx !== null) {
     const mtgEvent = document.getElementById('meeting-event') as HTMLDivElement
@@ -177,24 +180,28 @@ const resetAfterMeetingSetupDoneClicked = async (evtIdx: number | null) => {
  * Add `click` event listeners to all arrow buttons (for moving speakers between tables). 
  */
 const setupArrowButtonListeners =  () => {
+
   const buttnsR = document.querySelectorAll('.arrow-button-r')
-  buttnsR.forEach(el => el.addEventListener('click', () => {
-    void (async () => 
-      await handleRightArrowClick.call(el as HTMLElement) 
-    )()
-  }))
+  const rightHandler = async function (event: Event) {
+    const el = event.currentTarget as HTMLElement
+    await handleRightArrowClick.call(el) 
+  }
+  buttnsR.forEach(el => el.addEventListener('click', rightHandler as EventListener))
 
   const buttnsL = document.querySelectorAll('.arrow-button-l')
-  buttnsL.forEach(el => el.addEventListener('click', () => {
-    void (async () =>
-      await handleLeftArrowClick.call(el as HTMLElement)
-    )()
-  }))
+  const leftHandler = async function (event: Event) {
+    const el = event.currentTarget as HTMLElement
+    await handleLeftArrowClick.call(el) 
+  }  
+  buttnsL.forEach(el => el.addEventListener('click', leftHandler as EventListener ))
 }
 
 const setupWaitingTableMenuListener = () => {
+  const menuHandler = async () => {
+    await handleMenuClick()
+  }
   const menBtn = document.getElementById('icon-menu') as HTMLButtonElement
-  menBtn.addEventListener('click', () => { void (async () => await handleMenuClick())() })
+  menBtn.addEventListener('click', menuHandler as EventListener)
 }
 
 /** 
@@ -207,7 +214,10 @@ const setupSpeakingTableMemberListeners = () => {
   memberCells.forEach(el => el.addEventListener('click', handleSpeakingTableMemberClick))
   if (meetingIsBeingRecorded) {
     const noteBtn = document.getElementById('note-button') as HTMLButtonElement
-    noteBtn.addEventListener('click', handleNoteClicked)
+    const noteHandler = async () => {
+        await handleNoteClicked()
+    }
+    noteBtn.addEventListener('click', noteHandler as EventListener)
   }
 }
 
@@ -228,11 +238,7 @@ const setupSpeakingTableSectionChangeListener = () => {
 const setupMeetingSetupListeners = () => {
   const meetingSetupBtn = document.getElementById('sidebar-meeting-setup-btn')
   if (!meetingSetupBtn) {return}
-  meetingSetupBtn.addEventListener('click', () => { 
-    void (async () => { 
-      await handleMeetingSetupButtonClick() 
-    })() 
-  })
+  meetingSetupBtn.addEventListener('click', handleMeetingSetupButtonClick) 
 }
 
 /**
@@ -242,11 +248,10 @@ const setupClockExpandListener = () => {
   const exp = document.getElementById('sidebar-clock-btn')
   exp?.addEventListener('click', handleClockExpand)
   const modClk = document.getElementById('sidebar-modal-clock-btn')
-  modClk?.addEventListener('click', () => {
-    void (async () => {
-      await handleClockNewWindow()
-    })()
-  })
+  const modalHandler = async () => {
+    await handleClockNewWindow()
+  }
+  modClk?.addEventListener('click', modalHandler as EventListener)
 }
 
 
@@ -256,11 +261,7 @@ const setupClockExpandListener = () => {
 const setupResetListener = () => {
   const rst = document.getElementById('sidebar-reset-btn')
   if (!rst) {return}
-  rst.addEventListener('click', () => {
-    void (async () => {
-      await handleResetButtonClick.call(rst)
-    })()
-  })    
+  rst.addEventListener('click', handleResetButtonClick)
 }
 
 /**
@@ -268,24 +269,23 @@ const setupResetListener = () => {
  */
 const setupMeetingEventListeners = () => {
   const debateEnd = document.getElementById('sidebar-savedebate-btn') as HTMLButtonElement
-  debateEnd.addEventListener('click', () => {
-    void (async () => {
-      await updateDataAfterSaveDebate()
-      await resetAll()
-    })()
-  })
+  const debateEndHandler = async () => {
+    await updateDataAfterSaveDebate()
+    await resetAll()
+  }
+  debateEnd.addEventListener('click', debateEndHandler as EventListener)
+
   const meetingEnd = document.getElementById('sidebar-endmeeting-btn')
-  meetingEnd?.addEventListener('click', () => { 
-    void (async () => { 
-      await handleEndMeetingButtonClick.call(meetingEnd)
-    })()
-  })
+  const meetingEndHandler = async () => {
+    await handleEndMeetingButtonClick()
+  }
+  meetingEnd?.addEventListener('click', meetingEndHandler as EventListener)
+
   const meetingCancel = document.getElementById('sidebar-record-cancel-btn')
-  meetingCancel?.addEventListener('click', () => {  
-    void (async () => { 
-      await handleCancelMeetingButtonClick.call(meetingCancel)
-    })()
-  })    
+  const meetingCancelHandler = async () => {
+    await handleCancelMeetingButtonClick()
+  }
+  meetingCancel?.addEventListener('click', meetingCancelHandler as EventListener)    
 }
 
 /** 
@@ -293,7 +293,10 @@ const setupMeetingEventListeners = () => {
  */
 const setupInfoListener = () => {
   const info = document.getElementById('sidebar-info-btn') 
-  info?.addEventListener('click', () => { void (async () => await handleInfoButtonClick())() })
+  const infoHandler = async () => {
+    await handleInfoButtonClick()
+  }
+  info?.addEventListener('click', infoHandler as EventListener)
 }
 
 
@@ -302,24 +305,25 @@ const setupInfoListener = () => {
  */
 const setupTimerControlListeners = async () => {
   const playbtn = document.getElementById('btn-play') as HTMLElement
-  playbtn.addEventListener('click',  (ev) => {
-    void (async () => {
-      await handlePlayClicked.call(playbtn, ev)
-    })()
-  })    
+  const playHandler = async (event: Event) => {
+    const el = event.currentTarget as HTMLElement
+    await handlePlayClicked.call(el, event)
+  }
+  playbtn.addEventListener('click',  playHandler as EventListener)    
   
   const pausebtn = document.getElementById('btn-pause') as HTMLElement
-  pausebtn.addEventListener('click', (ev) => {
-    void (async () => {
-      await handlePauseClicked.call(pausebtn, ev)
-    })()
-  })
+  const pauseHandler = async (event: Event) => {
+    const el = event.currentTarget as HTMLElement
+    await handlePauseClicked.call(el, event)
+  }
+  pausebtn.addEventListener('click', pauseHandler as EventListener)
+
   const stopbtn = document.getElementById('btn-stop') as HTMLElement
-  stopbtn.addEventListener('click', (ev) => {
-    void (async () => {
-      await handleStopClicked.call(stopbtn, ev)
-    })()
-  })
+  const stopHandler = async (event: Event) => {
+    const el = event.currentTarget as HTMLElement
+    await handleStopClicked.call(el, event)
+  }
+  stopbtn.addEventListener('click', stopHandler as EventListener)
     
   
   // If setting up speakers-view coming back from setup,
@@ -367,30 +371,34 @@ const setupTimerControlListeners = async () => {
  * speaking table.
  */
 const setupSpeakingTableTimerListeners = () => {
+
   const playbtns = document.querySelectorAll('.spkg-table-cell-timer-play')
-  playbtns.forEach(el => el.addEventListener('click', (ev) => {
-    void (async () => {
-      await handlePlayClicked.call(el as HTMLElement, ev)
-    })()
-  }))
+  const playbtnsHandler = async (event: Event) => {
+    const el = event.currentTarget as HTMLElement
+    await handlePlayClicked.call(el, event)
+  }
+  playbtns.forEach(el => el.addEventListener('click', playbtnsHandler as EventListener))
+
   const play2btns = document.querySelectorAll('.spkg-table-cell-timer-play2')
-  play2btns.forEach(el => el.addEventListener('click', (ev) => {
-    void (async () => {
-      await handlePlayClicked.call(el as HTMLElement, ev)
-    })()
-  }))
+  const play2btnsHandler = async (event: Event) => {
+    const el = event.currentTarget as HTMLElement
+    await handlePlayClicked.call(el, event)
+  }
+  play2btns.forEach(el => el.addEventListener('click', play2btnsHandler as EventListener))
+
   const stopbtns = document.querySelectorAll('.spkg-table-cell-timer-stop')
-  stopbtns.forEach(el => el.addEventListener('click', (ev) => {
-    void (async () => {
-      await handleStopClicked.call(el as HTMLElement, ev)
-    })()
-  }))
+  const stopbtnsHandler = async (event: Event) => {
+    const el = event.currentTarget as HTMLElement
+    await handleStopClicked.call(el, event)
+  }  
+  stopbtns.forEach(el => el.addEventListener('click',stopbtnsHandler as EventListener))
+
   const pausebtns = document.querySelectorAll('.spkg-table-cell-timer-pause')
-  pausebtns.forEach(el => el.addEventListener('click', (ev) => {
-    void (async () => {
-      await handlePauseClicked.call(el as HTMLElement, ev)
-    })()
-  }))
+  const pausebtnsHandler = async (event: Event) => {
+    const el = event.currentTarget as HTMLElement
+    await handlePauseClicked.call(el, event)
+  }    
+  pausebtns.forEach(el => el.addEventListener('click', pausebtnsHandler as EventListener))
 }
 
 //
@@ -538,13 +546,15 @@ function handleSpeakingTableSectionChange(this: HTMLElement) {
 }
 
 // Display the meeting setup sheet and populate dropdowns
-async function handleMeetingSetupButtonClick() {
+function handleMeetingSetupButtonClick() {
   const expanded = isSetupSheetExpanded ? false : true
   setIsSetupSheetExpanded(expanded)
-  await loadSetupMeetingSheet()
+  void (async () => {
+    await loadSetupMeetingSheet()
+  })()
 }
 
-async function handleEndMeetingButtonClick(this: HTMLElement) {
+async function handleEndMeetingButtonClick() {
   // Handle display of sidebar buttons
   const sidebarBtns = document.getElementsByClassName('sidebar-norm') as HTMLCollectionOf<HTMLButtonElement>
   for (let i = 0; i < sidebarBtns.length; i++) {
@@ -568,7 +578,7 @@ async function handleEndMeetingButtonClick(this: HTMLElement) {
   await resetAll()
 }
 
-async function handleCancelMeetingButtonClick(this: HTMLElement) {
+async function handleCancelMeetingButtonClick() {
   // Handle display of sidebar buttons
   const sidebarBtns = document.getElementsByClassName('sidebar-norm') as HTMLCollectionOf<HTMLButtonElement>
   for (let i = 0; i < sidebarBtns.length; i++) {
@@ -593,8 +603,10 @@ async function handleCancelMeetingButtonClick(this: HTMLElement) {
   
 }
 
-async function handleResetButtonClick(this: HTMLElement) {
-  await resetAll()
+function handleResetButtonClick() {
+  void (async () => {
+    await resetAll()
+  })()
 }
 
 async function handleInfoButtonClick () {
@@ -693,35 +705,7 @@ async function handlePlayClicked(this: HTMLElement, ev: Event): Promise<void> {
     pauseBtn.disabled = false
     const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement
     stopBtn.disabled = false
-
-    // if (clockWindow) {
-    //   const modPlayBtn = clockWindow.document.getElementById('modal-btn-play') as HTMLButtonElement
-    //   modPlayBtn.disabled = true
-    //   const modPauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
-    //   modPauseBtn.disabled = false
-    //   const modStopBtn = clockWindow.document.getElementById('modal-btn-stop') as HTMLButtonElement
-    //   modStopBtn.disabled = false
-    // }
   }
-
-  // Modal timer
-  // if (clockWindow) {
-  //   if (this.id == 'modal-btn-play') {
-  //     const modPlayBtn = this as HTMLButtonElement
-  //     modPlayBtn.disabled = true
-  //     const modPauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
-  //     modPauseBtn.disabled = false
-  //     const modStopBtn = clockWindow.document.getElementById('modal-btn-stop') as HTMLButtonElement
-  //     modStopBtn.disabled = false
-
-  //     const btn = document.getElementById('btn-play') as HTMLButtonElement
-  //     btn.disabled = true
-  //     const pauseBtn = document.getElementById('btn-pause') as HTMLButtonElement
-  //     pauseBtn.disabled = false
-  //     const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement
-  //     stopBtn.disabled = false
-  //   }
-  // }
 
   if (clockWin) {
     await emit('timer-btn', { play_disabled: true, pause_disabled: false, stop_disabled: false });
@@ -771,34 +755,8 @@ async function handleStopClicked(this: HTMLElement, ev: Event) {
     pauseBtn.disabled = true
     const playBtn = document.getElementById('btn-play') as HTMLButtonElement
     playBtn.disabled = false
-
-    // if (clockWindow) {
-    //   const modStopBtn = clockWindow.document.getElementById('modal-btn-stop') as HTMLButtonElement
-    //   modStopBtn.disabled = true
-    //   const modPauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
-    //   modPauseBtn.disabled = true
-    //   const modPlayBtn = clockWindow.document.getElementById('modal-btn-play') as HTMLButtonElement
-    //   modPlayBtn.disabled = false
-    // }
   }
   // Modal timer
-  // if (clockWindow) {
-  //   if (this.id == 'modal-btn-stop') {
-  //     const modStopBtn = this as HTMLButtonElement
-  //     modStopBtn.disabled = true
-  //     const modPauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
-  //     modPauseBtn.disabled = true
-  //     const modPlayBtn = clockWindow.document.getElementById('modal-btn-play') as HTMLButtonElement
-  //     modPlayBtn.disabled = false
-
-  //     const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement
-  //     stopBtn.disabled = true
-  //     const pauseBtn = document.getElementById('btn-pause') as HTMLButtonElement
-  //     pauseBtn.disabled = true
-  //     const playBtn = document.getElementById('btn-play') as HTMLButtonElement
-  //     playBtn.disabled = false
-  //   }
-  // }
   if (clockWin) {
     await emit('timer-btn', { play_disabled: false, pause_disabled: true, stop_disabled: true });
   }
@@ -834,33 +792,7 @@ async function handlePauseClicked(this: HTMLElement, ev: Event) {
     playBtn.disabled = false
     const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement
     stopBtn.disabled = false
-
-    // if (clockWindow) {
-    //   const modPauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
-    //   modPauseBtn.disabled = true
-    //   const modPlayBtn = clockWindow.document.getElementById('modal-btn-play') as HTMLButtonElement
-    //   modPlayBtn.disabled = false
-    //   const modStopBtn = clockWindow.document.getElementById('modal-btn-stop') as HTMLButtonElement
-    //   modStopBtn.disabled = false
-    // }
   }
-
-  // if (clockWindow) {
-  //   if (this.id == 'modal-btn-pause') {
-  //     const modPauseBtn = this as HTMLButtonElement
-  //     modPauseBtn.disabled = true
-  //     const modPlayBtn = clockWindow.document.getElementById('modal-btn-play') as HTMLButtonElement
-  //     modPlayBtn.disabled = false
-  //     const modStopBtn = clockWindow.document.getElementById('modal-btn-stop') as HTMLButtonElement
-  //     modStopBtn.disabled = false
-  //   }
-  //   const pauseBtn = document.getElementById('btn-pause') as HTMLButtonElement
-  //   pauseBtn.disabled = true
-  //   const playBtn = document.getElementById('btn-play') as HTMLButtonElement
-  //   playBtn.disabled = false
-  //   const stopBtn = document.getElementById('btn-stop') as HTMLButtonElement
-  //   stopBtn.disabled = false
-  // }
 
   if (clockWin) {
     await emit('timer-btn', { play_disabled: false, pause_disabled: true, stop_disabled: false });
@@ -871,17 +803,6 @@ async function handlePauseClicked(this: HTMLElement, ev: Event) {
   pauseDisabled = true
   stopDisabled = false
 }
-
-// function handleSpkgTableTimerEvent(this: Element, ev: Event) {
-//   if (ev instanceof CustomEvent) {
-//     if (this.parentNode && this instanceof HTMLElement) {
-//       const tmr = this.parentNode.querySelector('.spkg-table-cell-timer') 
-//       if ( tmr && tmr instanceof HTMLElement){
-//         tmr.innerText = ev.detail.t
-//       }
-//     }
-//   }
-// }
 
 function handleContextMenuBlur (this: HTMLElement, ev: Event) {
   if ( ev && ev instanceof FocusEvent && ev.relatedTarget) {
@@ -912,20 +833,6 @@ function handleClockExpand(this: HTMLElement) {
  * Event listeners for the new window are embedded in clock.html
  */
 async function handleClockNewWindow() {
-  // if (clockWindow && !clockWindow.closed) {
-  //   clockWindow.close()
-  //   clockWindow = null
-  // }
-  // if (clockWin) {
-  //   await clockWin.close()
-  //   clockWin = null
-  // } 
-  // const clockWinIsVisible = await clockWin.isVisible()
-  // if (clockWinIsVisible) {
-  //   clockWin.close()
-  // }
-  // else {
-    // clockWindow = window.open('', 'clock','width=1100,height=560,backgroundColor="#525254"') as Window
 
   clockWin = new WebviewWindow("clock", {
     url: "./clock.html",
@@ -944,83 +851,49 @@ async function handleClockNewWindow() {
     })();
   });
 
-  await clockWin.once('clock-ready', async () => {
-    await emit('timer-btn', { play_disabled: playDisabled, pause_disabled: pauseDisabled, stop_disabled: stopDisabled });
-  })
-
+  await clockWin.once('clock-ready', () => {
+    void (async () => {
+      await emit('timer-btn', { play_disabled: playDisabled, pause_disabled: pauseDisabled, stop_disabled: stopDisabled });
+      })();
+    });
 
   await clockWin.once("tauri://error", (e) => {
     console.error("Failed to create help window", e);
   });
-  //   if (clockWindow) {
-  //     clockWindow.document.write(windowTimer)
-  //     const playBtn = clockWindow.document.getElementById('modal-btn-play') as HTMLButtonElement
-  //     playBtn.addEventListener('click', handlePlayClicked)
-  //     const stopBtn = clockWindow.document.getElementById('modal-btn-stop') as HTMLButtonElement
-  //     stopBtn.addEventListener('click', handleStopClicked)
-  //     const pauseBtn = clockWindow.document.getElementById('modal-btn-pause') as HTMLButtonElement
-  //     pauseBtn.addEventListener('click', handlePauseClicked)
-  //   }
-  // }
+
 }
 
-function handleNoteClicked() {
-  const noteWindowHtml = `
-  <!DOCTYPE html>
-  <html>
-    <head>
-      <meta charset="UTF-8">
-    </head>
-    <body>
-      <style>
-        body {
-          background-color: #ccc;
-          font-family: Arial, Helvetica, sans-serif;
-        }
-        #textarea-label {
-          color: white;
-        }
-        #textarea-container {
-        margin-left: 30px;
-        margin-top: 30px;
-        }
-        #debate-note {
-        border-radius: 6px;
-        }
-        #save-btn {
-          background-color: #444;
-          color: white;
-          border-radius: 6px;
-        }
-        #title {
-          margin-left: 30px;
-          font-weight: bold:
-        }
-      </style>
-      <div id='title'><p>Attach a note to this debate</p></div>
-      <div id='textarea-container'>
-        <label for='debate-note' id='textarea-label'></label>
-        <textarea type='text' rows='10' cols='50' placeholder='Agenda item...' id='debate-note'></textarea>
-        <div><button id='save-btn'>Save</button></div>
-      </div>
-    </body>
-  </html>
-  ` 
-  const childWindow = window.open('', 'Note', 'width=600,height=300')
-  if (childWindow) {
-    childWindow.document.write(noteWindowHtml)
-    const saveBtn = childWindow.document.getElementById('save-btn') as HTMLButtonElement
-    const textArea = childWindow.document.getElementById('debate-note')
-    textArea?.focus()
-    saveBtn.addEventListener('click', () => {
+async function handleNoteClicked() {
+  const noteWin = new WebviewWindow("note", {
+    url: "./note.html",
+    title: "Info",
+    width: 600,
+    height: 300,
+    resizable: true,
+    minimizable: false,
+    devtools: true
+  });
+
+  await noteWin.once("tauri://created", () => {
+    void (async () => {
+      await noteWin.show()
+      await noteWin.setFocus()
+    })()
+  })
+
+  await noteWin.once("tauri://error", (e) => {
+    console.error("Failed to create help window", e);
+  });
+  
+  await noteWin.once("note-saved", (e) => {
       void (async () => {
-      const txtArea = childWindow.document.getElementById('debate-note') as HTMLTextAreaElement
-      const note = txtArea.value
-      await setNoteForCurrentDebate(note)
-      childWindow.close()
+        const pyld = e.payload as { content: string }
+        const content = pyld.content
+        await setNoteForCurrentDebate(content)
+        await noteWin.close()
       })()
-    })
-  }
+    }
+  )
 }
 
 

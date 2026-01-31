@@ -39,21 +39,28 @@ const setupAddMemberListeners = function () {
   // Save button
   const svBtn = document.getElementById('save-btn')
   if (!svBtn) {return}
-  svBtn.addEventListener('click', handleSave)
+  const svClickHandler = async () => {
+    await handleSave()
+  }
+  svBtn.addEventListener('click', svClickHandler as EventListener)
 
   // Last input field for member
   const lastName = document.getElementById('member-last-name')
   if (!lastName) {return}
-  lastName.addEventListener('keypress', handleKeyPress)
+  const keypressHandler = async (event: Event) => {
+    const kpevent = event as KeyboardEvent
+    await handleKeyPress(kpevent)
+  }
+  lastName.addEventListener('keypress', keypressHandler as EventListener)
 }
 
 //
 // Handlers
 //
 
-function handleKeyPress(ev: KeyboardEvent) {
+async function handleKeyPress(ev: KeyboardEvent) {
   if (ev.key === 'Enter') {
-    handleSave()
+    await handleSave()
   }
 }
 

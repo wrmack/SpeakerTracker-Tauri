@@ -52,7 +52,10 @@ const setupDeleteEventListeners = function () {
 
   // Delete button
   const delBtn = document.getElementById('delete-event-save-btn') as HTMLButtonElement
-  delBtn.addEventListener('click', handleDelete)
+  const delBtnClickHandler = async () => {
+    await handleDelete()
+  }
+  delBtn.addEventListener('click', delBtnClickHandler as EventListener)
 }
 
 //

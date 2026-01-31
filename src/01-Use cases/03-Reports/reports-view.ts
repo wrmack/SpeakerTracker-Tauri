@@ -59,11 +59,10 @@ const setupReports = async () => {
   const edit = document.getElementById('reports-topbar-edit')
   edit?.addEventListener('click', handleEditClicked)
   const trash = document.getElementById('reports-topbar-trash')
-  trash?.addEventListener('click', () => {
-    void (async () => {
-      await handleTrashClicked()
-    })()  
-  })
+  const trashClickHandler = async () => {
+    await handleTrashClicked()
+  }
+  trash?.addEventListener('click',trashClickHandler as EventListener)
   const cancel = document.getElementById('reports-topbar-cancel')
   cancel?.addEventListener('click', handleCancelClicked)
 }
@@ -130,7 +129,7 @@ const handleReportCardClick = async function (this: HTMLElement)  {
 
   // Default export is a4 paper, portrait, using millimeters for units (210 x 297 mm)
   const doc: jsPDF = new jsPDF()
-  doc.setDisplayMode("50%")
+  doc.setDisplayMode("70%")
   
   let y = 0
   // Meeting group name
@@ -194,8 +193,8 @@ const handleReportCardClick = async function (this: HTMLElement)  {
   const reportWin = new WebviewWindow(rptDetails.Date.slice(0,16), {
     url: strg,
     title: "Report",
-    width: 800,
-    height: 600,
+    width: 700,
+    height: 850,
     resizable: true,
     minimizable: false
   });
@@ -227,11 +226,10 @@ function handleEditClicked(this: HTMLButtonElement) {
   // Remove listeners from cards
   const cards = document.getElementsByClassName('report-card')
   for (const card of cards) {
-    card.removeEventListener('click', () => {
-      void (async () => {
-        await handleReportCardClick.call(card as HTMLElement)
-      })()  
-    })
+    const cardRemoveHandler = async () => {
+      await handleReportCardClick.call(card as HTMLElement)
+    }
+    card.removeEventListener('click', cardRemoveHandler as EventListener)
   }
 }
 
@@ -280,11 +278,10 @@ function handleCancelClicked() {
   // Add card listeners
   const cards = document.getElementsByClassName('report-card')
   for (const card of cards) {
-    card.addEventListener('click', () => {
-      void (async () => { 
-        await handleReportCardClick.call(card as HTMLElement)
-      })()  
-    })
+    const cardClickHandler = async () => {
+      await handleReportCardClick.call(card as HTMLElement)
+    }
+    card.addEventListener('click', cardClickHandler as EventListener)
   }
 }
 
@@ -326,11 +323,10 @@ const createCardsFromReportsViewModel = (reports: ReportEventViewModel[]) => {
   // Add click listeners to each card
   const cards = document.querySelectorAll('.report-card')
   for (let i = 0; i < cards.length; i++) {
-    cards[i].addEventListener('click', () => {
-      void (async () => { 
+    const cardClickHandler = async () => {
         await handleReportCardClick.call(cards[i] as HTMLElement)
-      })()  
-    })
+    }
+    cards[i].addEventListener('click', cardClickHandler as EventListener)
   }
 }
 

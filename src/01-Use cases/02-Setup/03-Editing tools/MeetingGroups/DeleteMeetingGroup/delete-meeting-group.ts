@@ -46,7 +46,10 @@ const setupDeleteGroupListeners = () => {
   
   // Delete button
   const sv = document.getElementById('delete-group-save-btn') as HTMLElement
-  sv.addEventListener('click', handleDelete)
+  const svClickHandler = async () => {
+    await handleDelete()
+  }
+  sv.addEventListener('click', svClickHandler as EventListener)
 }
 
 //

@@ -42,7 +42,10 @@ const setupDeleteMemberListeners = function () {
 
   // Delete button
   const delBtn = document.getElementById('delete-member-save-btn') as HTMLButtonElement
-  delBtn.addEventListener('click', handleDelete)
+  const delbtnClickHandler = async () => {
+    await handleDelete()
+  }
+  delBtn.addEventListener('click', delbtnClickHandler as EventListener)
 }
 
 //

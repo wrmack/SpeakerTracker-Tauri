@@ -17,10 +17,13 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    "checkJs": true
   },
   "include": [
     "src",
     "eslint.config.ts"
-  ]
+  ],
+  "exclude": ["node_modules", "**/node_modules/*"]
 }

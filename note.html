@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+    <style>
+    body {
+        background-color: #ccc;
+        font-family: Arial, Helvetica, sans-serif;
+    }
+    #textarea-label {
+        color: white;
+    }
+    #textarea-container {
+    margin-left: 30px;
+    margin-top: 30px;
+    }
+    #debate-note {
+    border-radius: 6px;
+    }
+    #save-btn {
+        background-color: #444;
+        color: white;
+        border-radius: 6px;
+    }
+    #title {
+        margin-left: 30px;
+        font-weight: bold;
+    }
+    </style>
+    <div id='title'><p>Attach a note to this debate</p></div>
+    <div id='textarea-container'>
+    <label for='debate-note' id='textarea-label'></label>
+    <textarea type='text' rows='10' cols='50' placeholder='Agenda item...' id='debate-note'></textarea>
+    <div><button id='save-btn'>Save</button></div>
+    </div>
+<script type="module">
+    import { emit } from '@tauri-apps/api/event';
+
+    const save_btn = document.getElementById("save-btn");
+    const debate_note = document.getElementById("debate-note");
+
+    const handleSaveClicked = async () => {
+      const note_content = debate_note.value;
+      await emit('note-saved', { content: note_content });
+      window.close();
+    };
+
+    save_btn.addEventListener("click", handleSaveClicked);
+</script>
+</body>
+</html>

@@ -77,37 +77,34 @@ async function initialise() {
 // Load speakers view when Speakers button is clicked
 const speakersbtn = document.getElementById('speakers-btn')
 if (speakersbtn) {
-  speakersbtn.addEventListener('click', () => {
-    void (async () => {
-      removeActiveClasses()
-      speakersbtn.classList.add('active')
-      await loadSpeakersView()
-    })()
-  })
+  const spkrHandler = async () => {
+    removeActiveClasses()
+    speakersbtn.classList.add('active')
+    await loadSpeakersView()
+  }
+  speakersbtn.addEventListener('click', spkrHandler as EventListener)
 }
 
 // Load setup view when Setup button is clicked
 const setupbtn = document.getElementById('setup-btn')
 if (setupbtn) {
-  setupbtn.addEventListener('click', () => {
-    void (async function() {
-      removeActiveClasses()
-      setupbtn.classList.add('active')
-      await loadSetupView()     
-    })()
-  })
+  const setupHandler = async () => {
+    removeActiveClasses()
+    setupbtn.classList.add('active')
+    await loadSetupView()     
+  }
+  setupbtn.addEventListener('click', setupHandler as EventListener)
 }
 
 // Load reports view when Reports button is clicked
 const reportsbtn = document.getElementById('reports-btn')
 if (reportsbtn) {
-  reportsbtn.addEventListener('click', () => {
-    void (async () => {
+  const reportsHandler = async () => {
       removeActiveClasses()
       reportsbtn.classList.add('active')
       await loadReportsView()
-    })()
-  })
+  }
+  reportsbtn.addEventListener('click', reportsHandler as EventListener)
 }
 
 

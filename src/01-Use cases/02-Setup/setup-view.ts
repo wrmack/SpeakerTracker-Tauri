@@ -64,7 +64,7 @@ const setupEditItemListeners = () =>  {
   // 'Add' is pressed
   const topadd = document.getElementById('setup-topbar-add');
   if (!topadd) {return}
-  topadd.addEventListener('click',  () => {
+  const topaddHandler = () => {
     const trashBtn = document.getElementById('setup-topbar-trash') as HTMLButtonElement
     trashBtn.disabled = true
     const editBtn = document.getElementById('setup-topbar-edit') as HTMLButtonElement
@@ -87,13 +87,14 @@ const setupEditItemListeners = () =>  {
         loadAddEventSheet()
         setupAddEventListeners()
     }
-  })
+  }
+
+  topadd.addEventListener('click', topaddHandler as EventListener)
 
   // 'Trash' is pressed
   const toptrash = document.getElementById('setup-topbar-trash');
   if (!toptrash) {return}
-  toptrash.addEventListener('click', () => {
-    void (async () => {
+  const toptrashHandler = async () => {
       const addBtn = document.getElementById('setup-topbar-add') as HTMLButtonElement
       addBtn.disabled = true
       const editBtn = document.getElementById('setup-topbar-edit') as HTMLButtonElement
@@ -116,14 +117,13 @@ const setupEditItemListeners = () =>  {
           await loadDeleteEventSheet()
           setupDeleteEventListeners()
       }
-    })()
-  })
+    }    
+  toptrash.addEventListener('click', toptrashHandler as EventListener)
 
   // 'Edit' is pressed
   const toped = document.getElementById('setup-topbar-edit');
   if (!toped) {return}
-  toped.addEventListener('click', () => {
-    void (async () => {
+  const topedHandler = async () => {
       const trashBtn = document.getElementById('setup-topbar-trash') as HTMLButtonElement
       trashBtn.disabled = true
       const addBtn = document.getElementById('setup-topbar-add') as HTMLButtonElement
@@ -146,56 +146,56 @@ const setupEditItemListeners = () =>  {
           await loadEditEventSheet()
           setupEditEventListeners()
       }
-    })()
-  })
+  }
+  toped.addEventListener('click', topedHandler as EventListener)
 }
 
 const setupSidebarListeners =  async function () {
+
   // Entities button
   const sident = document.getElementById('setup-sidebar-ent-btn')
   if (!sident) {return}
-  sident.addEventListener('click', () => {
-    void (async () => {
+  const sidentHandler = async () => {
     await showEntities()
     removeSelectedClass()
     sident.classList.add('setup-sidebar-btn-selected')
     sideBarSelection.name = 'entities'
-    })()
-  })
-  document.addEventListener('ent-saved', (event) => {
-    void (async () => {
-      await showEntities()
-      if (event instanceof CustomEvent) {
-        const detail = event.detail as { deleted?: boolean }
-        if (detail.deleted && detail.deleted === true) {
-          const numEnt = await getNumberOfRowsInEntitiesTable() 
-          if (numEnt === 0) {
-            const sidemem =  document.getElementById('setup-sidebar-mbrs-btn') as HTMLButtonElement
-            sidemem.disabled = true
-          }
+  }
+  sident.addEventListener('click', sidentHandler as EventListener)
+
+  const entsavedHandler = async (event: Event) => {
+    await showEntities()
+    if (event instanceof CustomEvent) {
+      const detail = event.detail as { deleted?: boolean }
+      if (detail.deleted && detail.deleted === true) {
+        const numEnt = await getNumberOfRowsInEntitiesTable() 
+        if (numEnt === 0) {
+          const sidemem =  document.getElementById('setup-sidebar-mbrs-btn') as HTMLButtonElement
+          sidemem.disabled = true
         }
       }
-    })()
-  })
+    }
+  }
+  document.addEventListener('ent-saved', entsavedHandler as EventListener)
 
   // Members button
   const sidemem =  document.getElementById('setup-sidebar-mbrs-btn') as HTMLButtonElement
   if (!sidemem) {return}
-  sidemem.addEventListener('click', () => {
-    void (async () => {
+  const sidememHandler = async () => {
     await showMembers()
     removeSelectedClass()
     sidemem.classList.add('setup-sidebar-btn-selected')
     sideBarSelection.name = 'members'
-    })()
-  })
-  document.addEventListener('mbr-saved', (event) => {
-    void (async () => {
-      if (event instanceof CustomEvent) {
-        await showMembers()
-      }
-    })()
-  })
+  }
+  sidemem.addEventListener('click', sidememHandler as EventListener)
+
+  const mbrsavedHandler = async (event: Event) => {
+    if (event instanceof CustomEvent) {
+      await showMembers()
+    }
+  }
+  document.addEventListener('mbr-saved', mbrsavedHandler as EventListener)
+
   // If no entities setup disable members button
   const numEnt = await getNumberOfRowsInEntitiesTable() 
   if (numEnt === 0) {
@@ -205,21 +205,20 @@ const setupSidebarListeners =  async function () {
   // Meeting groups button
   const sidegp = document.getElementById('setup-sidebar-groups-btn') as HTMLButtonElement
   if (!sidegp) {return}
-  sidegp.addEventListener('click', () => {
-    void (async () => {
+  const sidegpHandler = async () => {
+    await showGroups()
+    removeSelectedClass()
+    sidegp.classList.add('setup-sidebar-btn-selected')
+    sideBarSelection.name = 'groups'
+  }
+  sidegp.addEventListener('click', sidegpHandler as EventListener)
+
+  const grpsavedHandler = async (event: Event) => {
+    if (event instanceof CustomEvent) {
       await showGroups()
-      removeSelectedClass()
-      sidegp.classList.add('setup-sidebar-btn-selected')
-      sideBarSelection.name = 'groups'
-    })()
-  })
-  document.addEventListener('grp-saved', (event) => {
-    void (async () => {
-      if (event instanceof CustomEvent) {
-        await showGroups()
-      }
-    })()
-  })
+    }
+  }
+  document.addEventListener('grp-saved', grpsavedHandler as EventListener)
   // If no members setup disable Groups button
   const numMbr = await getNumberOfRowsInMembersTable()
   if (numMbr === 0) {
@@ -229,21 +228,20 @@ const setupSidebarListeners =  async function () {
   // Events button
   const sideevt = document.getElementById('setup-sidebar-events-btn') as HTMLButtonElement
   if (!sideevt) {return}
-  sideevt.addEventListener('click', () => {
-    void (async () => {
+  const sideevtHandler = async () => {
+    await showEvents()
+    removeSelectedClass()
+    sideevt.classList.add('setup-sidebar-btn-selected')
+    sideBarSelection.name = 'events'
+  }
+  sideevt.addEventListener('click', sideevtHandler as EventListener)
+  
+  const evtsavedHandler = async (event: Event) => {
+    if (event instanceof CustomEvent) {
       await showEvents()
-      removeSelectedClass()
-      sideevt.classList.add('setup-sidebar-btn-selected')
-      sideBarSelection.name = 'events'
-    })()
-  })
-  document.addEventListener('evt-saved', (event) => {
-    void (async () => {
-      if (event instanceof CustomEvent) {
-        await showEvents()
-      }
-    })()
-  })
+    }
+  }
+  document.addEventListener('evt-saved', evtsavedHandler as EventListener)
   // If no groups setup disable Events button
   const numGrp = await getNumberOfRowsInGroupsTable()
   if (numGrp === 0) {

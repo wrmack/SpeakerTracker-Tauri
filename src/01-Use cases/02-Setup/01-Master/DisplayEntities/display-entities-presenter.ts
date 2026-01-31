@@ -21,14 +21,16 @@ async function loadEntities () {
   // Create custom event.  Bubble up and add event listener to document
   // in display-selected-entity-view.  Pass the id attribute of the element clicked.
   const cells = document.querySelectorAll('.ent-cell-btn') 
-  cells.forEach(el  => el.addEventListener('click', () => {
+  const selClickHandler = (event: Event) => {
+    const el = event.currentTarget as HTMLElement
     handleSelection(el)
     el.dispatchEvent(new CustomEvent('entity-selected', {
       bubbles: true,
       cancelable: false,
       detail: { id: el.id }
     }))
-  }))
+  }
+  cells.forEach(el  => el.addEventListener('click', selClickHandler))
 
   // When entities are loaded, select the first cell
   if (cells.length > 0) {

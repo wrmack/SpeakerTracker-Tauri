@@ -43,7 +43,10 @@ const setupEditMemberListeners = () => {
 
   // Save button
   const svBtn = document.getElementById('edit-member-save-btn') as HTMLButtonElement
-  svBtn.addEventListener('click', handleSave)
+  const svBtnClickHandler = async () => {
+    await handleSave()
+  }
+  svBtn.addEventListener('click', svBtnClickHandler as EventListener)
 }
 
 //
