@@ -54,9 +54,10 @@ const speaker_tracker = `
 <!--  Clock display and controls -->
 <div id="top-bar-container">
   <div id="display-area">
-    <div>
-      <p id="committee-name"></p>
-      <div id="meeting-event"></div>
+    <div id="names-container">
+      <div id="display-area-entity-name"></div>
+      <div id="display-area-committee-name"></div>
+      <div id="display-area-meeting-event"></div>
     </div>
     <div id="clock-display" >
       00:00
@@ -164,7 +165,7 @@ const resetAfterMeetingSetupDoneClicked = async (evtIdx: number | null) => {
     noteBtn.addEventListener('click', noteHandler as EventListener)
   }
   if (evtIdx !== null) {
-    const mtgEvent = document.getElementById('meeting-event') as HTMLDivElement
+    const mtgEvent = document.getElementById('display-area-meeting-event') as HTMLDivElement
     const evt: GroupEvent = await getOpenEventAtIdx(evtIdx) 
     const evtDate = formatIsoDate(evt.EventDate)
     mtgEvent.innerHTML = evtDate
@@ -567,7 +568,7 @@ async function handleEndMeetingButtonClick() {
   const sidebarRecordCircle = document.getElementById('sidebar-recordon-stop') as HTMLDivElement
   sidebarRecordCircle.style["display"] = "none"
   // Meeting date in top container
-  const mtgEvt = document.getElementById('meeting-event') as HTMLDivElement
+  const mtgEvt = document.getElementById('display-area-meeting-event') as HTMLDivElement
   mtgEvt.style["display"] = "none"
   
   // Close meeting event
@@ -591,7 +592,7 @@ async function handleCancelMeetingButtonClick() {
   const sidebarRecordCircle = document.getElementById('sidebar-recordon-stop') as HTMLDivElement
   sidebarRecordCircle.style["display"] = "none"
   // Meeting date in top container
-  const mtgEvt = document.getElementById('meeting-event') as HTMLDivElement
+  const mtgEvt = document.getElementById('display-area-meeting-event') as HTMLDivElement
   mtgEvt.style["display"] = "none"
   
   // Close meeting event

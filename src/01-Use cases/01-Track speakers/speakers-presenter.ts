@@ -1,6 +1,7 @@
 
 import { 
   getEntities, 
+  getEntityWithId,
   // getEntityAtIdx,
   // getGroupsForEntityId,
   getGroupForId,
@@ -20,7 +21,7 @@ import {
 
 import {
   getSavedEntGroupId,
-  // currentEntityId,
+  currentEntityId,
   setCurrentEntityId,
   currentGroupId,
   setCurrentGroupId,
@@ -96,15 +97,20 @@ async function populateTables () {
   if (savedEntGpId.entId != undefined) {
     await setCurrentEntityId(savedEntGpId.entId)
   } 
-  if (savedEntGpId.grpId != undefined) {
+  if (savedEntGpId.grpId != null) {
      await setCurrentGroupId(savedEntGpId.grpId)
-  } 
+  }
+  // Write entity name
+  const entity = await getEntityWithId(currentEntityId) 
+  const entityDiv = document.getElementById('display-area-entity-name') as HTMLElement
+  entityDiv.innerHTML = entity.EntName
+  // Write group name
   const group = await getGroupForId(currentGroupId)
   let memberIds:Member[] = []
   if (group != undefined) {
     memberIds = await getMembersForGroupId(currentGroupId)
     const groupName = group.GrpName
-    const comm = document.getElementById('committee-name')
+    const comm = document.getElementById('display-area-committee-name')
     if (comm) {
       comm.innerHTML = groupName
     }

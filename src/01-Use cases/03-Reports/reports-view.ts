@@ -137,6 +137,11 @@ const handleReportCardClick = async function (this: HTMLElement)  {
   doc.setFont('helvetica','bold')
   doc.setFontSize(14)
   
+  if (!rptDetails?.EntityName) {return}
+  doc.text(rptDetails.EntityName, 105, y, {"align":"center"})
+
+  y += 15
+
   if (!rptDetails?.MeetingGroupName) {return}
   doc.text(rptDetails.MeetingGroupName, 105, y, {"align":"center"})
   

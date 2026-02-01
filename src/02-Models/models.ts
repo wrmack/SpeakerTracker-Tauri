@@ -333,6 +333,18 @@ const getGroupForId = async (id: number) => {
   return group == undefined ? undefined : group[0] 
 }
 
+/**
+ * Retrieve entity having a group with given id
+ * @returns An entity which has the group with the given id.
+ */
+const getEntityForGroupId = async (id: number) => {
+  const group = await getGroupForId(id)
+  const entId = group?.Entity
+  const sql = `SELECT * FROM Entities WHERE Entities.Id = ${entId};`
+  const db = getDb()
+  const entities: Entity[] = await db.select(sql)
+  return entities[0]
+}
 /** 
  * Get members for a group using the group Id (primary key).
  * @returns Array of Member records for the given group id, ordered by last name.
@@ -616,6 +628,7 @@ export {
   getMembersForGroupId,
   getGroupAtIdx,
   getGroupForId,
+  getEntityForGroupId,
   getGroupsForCurrentEntity,
   getGroupIdsForEntityId,
   getGroupsForEntityId,

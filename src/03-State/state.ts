@@ -141,14 +141,17 @@ const getSavedEntGroupId = async () => {
     }
     const grpIds = await getGroupIdsForEntityId(ent.Id)
     let createRowSql = ''
+    let result: {entId:number,grpId:number | null}
     if (grpIds.length == 0) {
       createRowSql = `INSERT INTO State (EntityId) VALUES (${ent.Id})`
+      result = {entId: ent.Id, grpId: null}
     }
     else {
       createRowSql = `INSERT INTO State (EntityId, GroupId) VALUES (${ent.Id}, ${grpIds[0].Id})` 
+      result = {entId: ent.Id, grpId: grpIds[0].Id}
     }
     await db.execute(createRowSql)
-    return {entId: ent.Id, grpId: grpIds[0].Id}
+    return result
   } else {
     // Get the saved state
     const sql = `SELECT EntityId, GroupId FROM State;`

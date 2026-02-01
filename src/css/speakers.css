@@ -36,15 +36,38 @@ Speakers view
   justify-content: space-between;
 }
 
-#committee-name {
-    font-family: Arial, Helvetica, sans-serif;
-    font-size: 16pt;
-    font-weight:400;
-    float:left;
-    width:100%;
+#names-container {
+display: flex;
+flex-direction: column;
+height: 120px;
+justify-content: space-evenly;
 }
 
-#meeting-event {
+/* #entity-name {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16pt;
+  font-weight:400;
+  float:left;
+  width:100%;
+} */
+
+#display-area-committee-name {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 16pt;
+  font-weight:400;
+  float:left;
+  width:100%;
+}
+
+#display-area-entity-name {
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14pt;
+  font-weight:400;
+  float:left;
+  width:100%;
+}
+
+#display-area-meeting-event {
   display: none;
   /* position: absolute; */
   color: white;

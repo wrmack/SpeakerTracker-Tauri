@@ -13,7 +13,8 @@ import {
   getDebatesForEventId,
   getDebateSections,
   getDebateSectionSpeeches,  
-  getGroupForId
+  getGroupForId,
+  getEntityForGroupId
 } from '../../02-Models/models.js'
 import { ReportEventViewModel, Debate, DebateViewModel, DebateSectionViewModel, DebateSpeechViewModel, DebateSpeech } from '../../types/interfaces.js'
 
@@ -206,8 +207,10 @@ const getReportDetailsForEventId = async (eventId: number) => {
   // Build the final ReportDetailsViewModel
   const evt = await getEventWithId(eventId)
   const grp = await getGroupForId(evt.GroupId)
+  if (!grp) {return}
+  const entity = await getEntityForGroupId(grp.Id)
   if (!grp?.GrpName) {return}
-  const reportDetails = {MeetingGroupName: grp.GrpName, Date: evt.EventDate, Debates: debatesForReport}
+  const reportDetails = {EntityName: entity.EntName , MeetingGroupName: grp.GrpName, Date: evt.EventDate, Debates: debatesForReport}
   return reportDetails
 } 
 
