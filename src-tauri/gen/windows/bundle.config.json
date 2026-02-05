@@ -1,0 +1,18 @@
+{
+  "publisher": "CN=14EFDD4D-6393-45C1-9098-784F9A3D8508",
+  "publisherDisplayName": "Warwick McNaughton",
+  "capabilities": {
+    "general": [
+      "internetClient"
+    ]
+  },
+  "extensions": {
+    "shareTarget": false,
+    "fileAssociations": [],
+    "protocolHandlers": []
+  },
+  "signing": {
+    "pfx": "C:\\Users\\warwi\\LocalDeveloper\\Certificate\\14EFDD4D-6393-45C1-9098-784F9A3D8508\\14EFDD4D-6393-45C1-9098-784F9A3D8508.pfx",
+    "pfxPassword": null
+  }
+}

@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "speakertracker-rust",
-  "version": "0.1.1",
-  "identifier": "SpeakerTracker",
+  "productName": "Speaker Tracker",
+  "version": "2.1.0",
+  "identifier": "5918WarwickMcNaughton.SpeakerTracker",
   "build": {
     "beforeDevCommand": "pnpm dev",
     "devUrl": "http://localhost:1420",
@@ -35,6 +35,7 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": []
+    "resources": [],
+    "shortDescription": "An app to track speakers in a formal debate."
   }
 }
